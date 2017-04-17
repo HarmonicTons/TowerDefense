@@ -9,14 +9,33 @@ class Renderer {
         this.tiles = [];
 
         this.view = new View(this, canvas);
+
+        this.displayMonitoring = true;
+
+        this.timer = new Timer();
+        this.frames = 0;
+        this.fps = 0;
+
+        this.lastFramesDuration = [];
     }
 
     /**
      * Render the current frame
      */
     render() {
-        let map = this.game.map;
+        this.frames++;
+        let dt = this.timer.reset();
+        if (this.frames % 100 === 0) {
+            let avg_dt = this.lastFramesDuration.reduce((s, dt) => s + dt, 0) / this.lastFramesDuration.length;
+            this.fps = 1000 / avg_dt;
+            this.lastFramesDuration = [];
+        } else {
+            this.lastFramesDuration.push(dt);
+        }
 
+        this.context.clearRect(0, 0, this.view.width, this.view.height);
+
+        let map = this.game.map;
         // draw every tile of the map
         for (let x = 0; x < map.width; x++) {
             for (let y = 0; y < map.height; y++) {
@@ -29,11 +48,38 @@ class Renderer {
                 this.context.drawImage(image, sc.x, sc.y, ts, ts);
             }
         }
+        // draw every units on the map
+        map.units.forEach(unit => {
+            if (!unit.isAlive) return;
+            let image = this.units.find(u => u.id === unit.id).image;
+
+            if (!image) return;
+            let sc = this.view.screenCoordinates(unit.x, unit.y);
+            let ts = this.view.tileSize;
+            this.context.drawImage(image, sc.x, sc.y, ts, ts);
+        });
+
+        // draw monitoring
+        if (this.displayMonitoring) {
+            this.drawMonitoring();
+        }
 
         // draw next frame
         requestAnimationFrame(() => {
             this.render();
         });
+    }
+
+    /**
+     * Draw monitoring data
+     */
+    drawMonitoring() {
+        this.context.font = "10px Arial";
+        this.context.fillStyle = "red";
+        this.context.fillText("Map : " + this.game.map.name, this.view.width - 100, 10, 100);
+        this.context.fillText("Time : " + this.game.globalTimer.timeString, this.view.width - 100, 20, 100);
+        this.context.fillText("FPS : " + this.fps.toFixed(1), this.view.width - 100, 30, 100);
+        this.context.fillText("UPS : " + this.game.ups.toFixed(1), this.view.width - 100, 40, 100);
     }
 
     /**
@@ -44,6 +90,28 @@ class Renderer {
     setView(width, height) {
         this.view.width = width;
         this.view.height = height;
+    }
+
+    /**
+     * Load all the units textures for the current scenario
+     * @return {Promise} state promise
+     */
+    loadScenarioUnits() {
+        this.units = [];
+        let units = this.game.scenario.units;
+        let imagesPaths = units.map(unit => './images/units/' + unit.fileName);
+
+        console.log(`${imagesPaths.length} units textures to load.`);
+        return this.loadImages(imagesPaths).then(images => {
+            images.forEach((image, index) => {
+                this.units.push({
+                    id: units[index].id,
+                    image: images[index]
+                });
+            });
+        }).then(() => {
+            console.log(`All units textures have been loaded.`);
+        });
     }
 
     /**

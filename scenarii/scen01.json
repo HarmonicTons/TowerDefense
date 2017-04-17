@@ -1,0 +1,17 @@
+{
+    "name": "Easy Task",
+    "units": [{
+        "id": 1,
+        "fileName": "monster01.jpg"
+    }],
+    "data": [{
+        "at": 1000,
+        "unit": 1
+    },{
+        "at": 2000,
+        "unit": 1
+    },{
+        "at": 3000,
+        "unit": 1
+    }]
+}

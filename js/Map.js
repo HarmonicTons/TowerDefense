@@ -11,9 +11,14 @@ class Map {
      * @return {Promise} state promise
      */
     loadMapFile(mapFile) {
-        return this.openMapFile(mapFile).then(mapData => {
-            this.setMapData(mapData);
-        });
+        return this.openMapFile(mapFile)
+            .catch(error => {
+                console.error(error);
+                return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
+            })
+            .then(mapData => {
+                this.setMapData(mapData);
+            });
     }
 
     /**
@@ -45,6 +50,7 @@ class Map {
         this.height = mapData.height;
         this.data = mapData.data;
         this.tiles = mapData.tiles;
+        this.unitPath = mapData.unitPath;
     }
 
     /**
