@@ -59,6 +59,17 @@ class Renderer {
             this.context.drawImage(image, sc.x, sc.y, ts, ts);
         });
 
+        // draw every tower on the map
+        map.towers.forEach(tower => {
+            // TODO tower glossary
+            let image;
+
+            if (!image) return;
+            let sc = this.view.screenCoordinates(tower.x, tower.y);
+            let ts = this.view.tileSize;
+            this.context.drawImage(image, sc.x, sc.y, ts, ts);
+        });
+
         // draw monitoring
         if (this.displayMonitoring) {
             this.drawMonitoring();
@@ -79,7 +90,7 @@ class Renderer {
         this.context.fillText("Map : " + this.game.map.name, this.view.width - 100, 10, 100);
         this.context.fillText("Time : " + this.game.globalTimer.timeString, this.view.width - 100, 20, 100);
         this.context.fillText("FPS : " + this.fps.toFixed(1), this.view.width - 100, 30, 100);
-        this.context.fillText("UPS : " + this.game.ups.toFixed(1), this.view.width - 100, 40, 100);
+        this.context.fillText("UPS : " + this.game.updater.ups.toFixed(1), this.view.width - 100, 40, 100);
     }
 
     /**

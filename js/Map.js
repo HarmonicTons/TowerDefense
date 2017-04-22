@@ -3,6 +3,9 @@ class Map {
         this.game = game;
 
         this.units = [];
+
+        let tower = new Tower(1,5,5,1,1,3);
+        this.towers = [tower];
     }
 
     /**
