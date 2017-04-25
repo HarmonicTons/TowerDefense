@@ -74,6 +74,27 @@ class Renderer {
             let sc = this.view.screenCoordinates(tower.x, tower.y);
             let ts = this.view.tileSize;
             this.context.drawImage(image, sc.x, sc.y, ts, ts);
+
+            // range display
+            this.context.beginPath();
+            this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+            this.context.fillStyle= 'rgba(255,0,0,0.1)';
+            this.context.fill();
+        });
+
+        // draw hp bar
+        map.units.forEach(unit => {
+            if (!unit.isAlive) return;
+
+            let sc = this.view.screenCoordinates(unit.x, unit.y);
+            let ts = this.view.tileSize;
+
+            let fullBarSize = this.view.tileSize * 3 / 4;
+            let barSize = Math.ceil(fullBarSize * unit.hp / unit.maxHp);
+            this.context.fillStyle = "black";
+            this.context.fillRect(sc.x + ts * 1 / 8, sc.y - ts * 1 / 4, fullBarSize, 5);
+            this.context.fillStyle = "red";
+            this.context.fillRect(sc.x + ts * 1 / 8, sc.y - ts * 1 / 4, barSize, 5);
         });
 
         // draw monitoring
@@ -137,15 +158,17 @@ class Renderer {
     loadScenarioUnits() {
         this.units = [];
         let unitsInScenario = [];
-        this.game.scenario.data.forEach(d => {
-            if(!unitsInScenario.includes(d.id)){
-                unitsInScenario.push(d.id);
-            }
+        this.game.scenario.waves.forEach(w => {
+            w.forEach(d => {
+                if (!unitsInScenario.includes(d.id)) {
+                    unitsInScenario.push(d.id);
+                }
+            });
         });
         let unitsBook = this.game.unitsBook;
         let imagesPaths = unitsInScenario.map(id => {
             let unitData = unitsBook.units.find(u => u.id === id);
-            if(!unitData) {
+            if (!unitData) {
                 console.warn(`Unknown unit: ${id}`)
                 return './images/units/default.png';
             }

@@ -6,7 +6,25 @@ unitsBooks.push({
         "id": 1,
         "name": "monster01",
         "image": "monster01.png",
+        "speed": 1,
+        "hp": 5,
+    },{
+        "id": 2,
+        "name": "monster02",
+        "image": "monster02.png",
+        "speed": 1,
+        "hp": 20,
+    },{
+        "id": 3,
+        "name": "monster03",
+        "image": "monster03.png",
+        "speed": 3,
+        "hp": 5,
+    },{
+        "id": 4,
+        "name": "monster04",
+        "image": "monster04.png",
         "speed": 2,
-        "hp": 10,
+        "hp": 50,
     }]
 });

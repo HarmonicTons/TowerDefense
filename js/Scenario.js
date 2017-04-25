@@ -1,6 +1,8 @@
 class Scenario {
     constructor(game) {
         this.game = game;
+        this.timer = new Timer();
+        this.isPaused = true;
     }
 
     /**
@@ -38,27 +40,68 @@ class Scenario {
     }
     */
 
+
+    /**
+     * startWave - Start the current wave
+     *
+     */
+    startWave() {
+        console.log(`Starting wave #${this._waveIndex+1}`);
+        this.timer.reset();
+        this.isPaused = false;
+    }
+
     /**
      * Set the scenario data
      * @param {object} scenarioData scenario data
      */
     setScenarioData(scenarioData) {
         this.name = scenarioData.name;
-        this.data = scenarioData.data;
+        this.waves = scenarioData.waves;
         this.units = scenarioData.units;
         this.baseHealth = scenarioData.baseHealth;
+
+        this._waveIndex = 0;
+    }
+
+
+    /**
+     * pause - Put the scenario on hold
+     *
+     */
+    pause() {
+        this.isPaused = true;
     }
 
     /**
      * Indicate what unit are to be spawned now according to the scenario
-     * @param {number} timestamp
      * @return {object[]} array of units to spawn
      */
-    unitsToSpawn(timestamp) {
-        let data = this.data.filter(d => d.timestamp <= timestamp && !d.spawned);
+    unitsToSpawn() {
+        let data = this.currentWave.filter(d => d.timestamp <= this.timer.now && !d.spawned);
         return data;
     }
 
+
+    /**
+     * get currentWave - Get the current wave data
+     *
+     * @return {object}  current wave data
+     */
+    get currentWave() {
+        return this.waves[this._waveIndex];
+    }
+
+
+    /**
+     * nextWave - Move to the next wave
+     *
+     * @return {object}  next wave data
+     */
+    nextWave() {
+        this._waveIndex++;
+        return this.currentWave;
+    }
 
     /**
      * isOver - Indicate if the scenario is over
@@ -66,6 +109,16 @@ class Scenario {
      * @return {boolean}  true if the scenario is over
      */
     get isOver() {
-        return (this.game.globalTimer.now > this.data.slice(-1)[0].timestamp);
+        return this._waveIndex > this.waves.length || (this._waveIndex == this.waves.length && this.waveOver);
+    }
+
+
+    /**
+     * get waveOver - Indicate if the current wave is over
+     *
+     * @return {boolean}  true if the wave is over
+     */
+    get waveOver() {
+        return (!this.currentWave || this.timer.now > this.currentWave.slice(-1)[0].timestamp);
     }
 }

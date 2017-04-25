@@ -5,6 +5,7 @@ class Unit {
         this.y = y;
         this.speed = speed;
         this.hp = hp;
+        this.maxHp = hp;
         this.pathIndex = pathIndex;
     }
 

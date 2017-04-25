@@ -22,12 +22,16 @@ class Game {
         ])).then(() => {
 
             // add a tower
-            let towerData = this.towersBook.towers[0];
-            let tower = new Tower(1, 5, 5, towerData.fireRate, towerData.damages, towerData.range);
+            let towerData = this.towersBook.towers[1];
+            let tower = new Tower(towerData.id, 5, 5, towerData.fireRate, towerData.damages, towerData.range);
             this.map.towers.push(tower);
 
+            // start the motor
             this.renderer.render();
             this.updater.update();
+
+            // start the scenario
+            this.scenario.startWave();
         });
     }
 

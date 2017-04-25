@@ -26,9 +26,8 @@ class Updater {
             this.lastUpdateDuration.push(dt);
         }
 
-
-
         let map = this.game.map;
+        let scenario = this.game.scenario;
 
         // update all the things
         let timestamp = this.game.globalTimer.now;
@@ -100,27 +99,45 @@ class Updater {
         });
 
         //spawn new units
-        let unitsBook = this.game.unitsBook;
-        let unitsToSpawn = this.game.scenario.unitsToSpawn(timestamp);
-        let spawnPoint = map.unitPath[0];
-        unitsToSpawn.forEach(d => {
-            let unitData = unitsBook.units.find(u => u.id === d.id);
-            let unit = new Unit(d.id, spawnPoint.x, spawnPoint.y, unitData.speed, unitData.hp, 0);
-            map.units.push(unit);
-            d.spawned = true;
-        });
+        if (!scenario.isPaused) {
+            let unitsBook = this.game.unitsBook;
+            let unitsToSpawn = scenario.unitsToSpawn(timestamp);
+            let spawnPoint = map.unitPath[0];
+            unitsToSpawn.forEach(d => {
+                let unitData = unitsBook.units.find(u => u.id === d.id);
+                let unit = new Unit(d.id, spawnPoint.x, spawnPoint.y, unitData.speed, unitData.hp, 0);
+                map.units.push(unit);
+                d.spawned = true;
+            });
+
+            //if the wave is over
+            if (scenario.waveOver && unitsAlive.length === 0) {
+                // put on the scenario on hold
+                scenario.pause();
+                // prepare next wave
+                scenario.nextWave();
+                console.log("You have some time to improve your base.");
+                setTimeout(() => {
+
+                    // add a tower
+                    let towerData = this.game.towersBook.towers[2];
+                    let tower = new Tower(towerData.id, 11, 3, towerData.fireRate, towerData.damages, towerData.range);
+                    this.game.map.towers.push(tower);
 
 
+                    scenario.startWave();
+                },5000);
+            }
 
-
-        // if the game is over
-        // victory
-        if (this.game.scenario.isOver && unitsAlive.length === 0) {
-            this.game.end(1);
-        }
-        // defeat
-        if (this.game.baseHealth <= 0) {
-            this.game.end(0);
+            // if the game is over
+            // victory
+            if (scenario.isOver && unitsAlive.length === 0) {
+                this.game.end(1);
+            }
+            // defeat
+            if (this.game.baseHealth <= 0) {
+                this.game.end(0);
+            }
         }
 
         // do next update
