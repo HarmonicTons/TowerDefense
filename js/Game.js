@@ -1,22 +1,50 @@
 class Game {
-    constructor(canvas, mapFile, scenarioFile) {
+    constructor(canvas, mapFile, scenarioFile, unitsFile, towersFile) {
         this.canvas = canvas;
         this.renderer = new Renderer(this, canvas);
         this.map = new Map(this);
         this.updater = new Updater(this);
         this.scenario = new Scenario(this);
         this.inputListener = new InputListener(this, canvas);
-        this.renderer.setView(600, 400);
+        this.renderer.setView(576, 384);
+        this.unitsBook = {};
+        this.towersBook = {};
 
         this.globalTimer = new Timer();
 
         Promise.all([
+            this.loadUnitsBook(unitsFile),
+            this.loadTowersBook(towersFile)
+        ]).then(() => Promise.all([
+            this.loadTowers(),
             this.loadScenario(scenarioFile),
             this.loadMap(mapFile)
-        ]).then(() => {
+        ])).then(() => {
+
+            // add a tower
+            let towerData = this.towersBook.towers[0];
+            let tower = new Tower(1, 5, 5, towerData.fireRate, towerData.damages, towerData.range);
+            this.map.towers.push(tower);
+
             this.renderer.render();
             this.updater.update();
         });
+    }
+
+    loadUnitsBook(unitsFile) {
+        return Unit.loadUnitsFile(unitsFile).then(unitsBook => {
+            this.unitsBook = unitsBook;
+        });
+    }
+
+    loadTowersBook(towersFile) {
+        return Tower.loadTowersFile(towersFile).then(towersBook => {
+            this.towersBook = towersBook;
+        });
+    }
+
+    loadTowers() {
+        return this.renderer.loadTowers();
     }
 
     /**
@@ -26,6 +54,7 @@ class Game {
      */
     loadScenario(scenarioFile) {
         return this.scenario.loadScenarioFile(scenarioFile).then(() => {
+            this.baseHealth = this.scenario.baseHealth;
             return this.renderer.loadScenarioUnits();
         });
     }
@@ -41,10 +70,21 @@ class Game {
         });
     }
 
+
     /**
-     * Update the game
+     * end - End the game
+     *
+     * @param  {boolean} isVictory true if the player won
      */
-    update() {
+    end(isVictory) {
+        if (isVictory) {
+            console.log("YOU WON");
+        } else {
+            console.log("GAMEOVER");
+        }
+
+        this.renderer.stop();
+        this.updater.stop();
     }
 
     /**

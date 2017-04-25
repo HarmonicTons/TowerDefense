@@ -6,11 +6,16 @@ class Updater {
         this.ups = 0;
         this.updates = 0;
         this.lastUpdateDuration = [];
+        this.stoped = false;
+    }
+
+    stop() {
+        console.log("Stoping update.");
+        this.stoped = true;
     }
 
     update() {
-        let map = this.game.map;
-
+        if (this.stoped) return;
         this.updates++;
         let dt = this.upsTimer.reset();
         if (this.updates % 100 === 0) {
@@ -21,12 +26,19 @@ class Updater {
             this.lastUpdateDuration.push(dt);
         }
 
+
+
+        let map = this.game.map;
+
         // update all the things
         let timestamp = this.game.globalTimer.now;
         //move units
         let units = map.units;
+        let unitsAlive = [];
         units.forEach(unit => {
             if (!unit.isAlive) return;
+
+            unitsAlive.push(unit);
             let startPoint = map.unitPath[unit.pathIndex];
             let endPoint = map.unitPath[unit.pathIndex + 1];
             let currentPath = [startPoint, endPoint];
@@ -48,7 +60,8 @@ class Updater {
 
                 if (unit.pathIndex >= map.unitPath.length - 1) {
                     console.log("BOOM!");
-                    unit.hp = 0;
+                    this.game.baseHealth--;
+                    unit.kill();
                 }
             }
         });
@@ -56,22 +69,62 @@ class Updater {
         //tower fires
         let towers = map.towers;
         towers.forEach(tower => {
+            // cooldown
+            if (tower.timer.now < 1000/tower.fireRate) return;
 
-            // do the thing
+            let closestUnit = {
+                distance: map.width + map.height
+            }
+            for (let i = 0; i < map.units.length; i++) {
+                let unit = map.units[i];
+                if (!unit.isAlive) continue;
+                let distance = Map.distance(tower, unit);
+                if (distance < closestUnit.distance && distance < tower.range) {
+                    closestUnit = {
+                        unit: unit,
+                        distance: distance
+                    }
+                }
+            }
+
+            // if there is an unit in range
+            if (closestUnit.unit) {
+                // attack unit
+                console.log("pew");
+                closestUnit.unit.takeDamage(tower.damages);
+                // reset cooldown
+                tower.timer.reset();
+            }
+
 
         });
-
 
         //spawn new units
+        let unitsBook = this.game.unitsBook;
         let unitsToSpawn = this.game.scenario.unitsToSpawn(timestamp);
         let spawnPoint = map.unitPath[0];
-        unitsToSpawn.forEach(u => {
-            let unit = new Unit(u.id, spawnPoint.x, spawnPoint.y, u.speed, u.hp, 0);
+        unitsToSpawn.forEach(d => {
+            let unitData = unitsBook.units.find(u => u.id === d.id);
+            let unit = new Unit(d.id, spawnPoint.x, spawnPoint.y, unitData.speed, unitData.hp, 0);
             map.units.push(unit);
-            u.spawned = true;
+            d.spawned = true;
         });
 
+
+
+
+        // if the game is over
+        // victory
+        if (this.game.scenario.isOver && unitsAlive.length === 0) {
+            this.game.end(1);
+        }
+        // defeat
+        if (this.game.baseHealth <= 0) {
+            this.game.end(0);
+        }
+
         // do next update
+        // FIXME the loop period needs to become dynamic if the methode update() is longer than 5ms
         setTimeout(() => {
             this.update();
         }, 5);

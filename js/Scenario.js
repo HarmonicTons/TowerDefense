@@ -46,6 +46,7 @@ class Scenario {
         this.name = scenarioData.name;
         this.data = scenarioData.data;
         this.units = scenarioData.units;
+        this.baseHealth = scenarioData.baseHealth;
     }
 
     /**
@@ -55,11 +56,16 @@ class Scenario {
      */
     unitsToSpawn(timestamp) {
         let data = this.data.filter(d => d.timestamp <= timestamp && !d.spawned);
-        data.forEach(d => {
-            let unitData = this.units.find(u => u.id === d.id);
-            d.hp = unitData.hp;
-            d.speed = unitData.speed;
-        });
         return data;
+    }
+
+
+    /**
+     * isOver - Indicate if the scenario is over
+     *
+     * @return {boolean}  true if the scenario is over
+     */
+    get isOver() {
+        return (this.game.globalTimer.now > this.data.slice(-1)[0].timestamp);
     }
 }

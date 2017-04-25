@@ -17,12 +17,19 @@ class Renderer {
         this.fps = 0;
 
         this.lastFramesDuration = [];
+        this.stoped = false;
+    }
+
+    stop() {
+        console.log("Stoping render.");
+        this.stoped = true;
     }
 
     /**
      * Render the current frame
      */
     render() {
+        if (this.stoped) return;
         this.frames++;
         let dt = this.timer.reset();
         if (this.frames % 100 === 0) {
@@ -61,8 +68,7 @@ class Renderer {
 
         // draw every tower on the map
         map.towers.forEach(tower => {
-            // TODO tower glossary
-            let image;
+            let image = this.towers.find(t => t.id === tower.id).image;
 
             if (!image) return;
             let sc = this.view.screenCoordinates(tower.x, tower.y);
@@ -86,7 +92,7 @@ class Renderer {
      */
     drawMonitoring() {
         this.context.font = "10px Arial";
-        this.context.fillStyle = "red";
+        this.context.fillStyle = "black";
         this.context.fillText("Map : " + this.game.map.name, this.view.width - 100, 10, 100);
         this.context.fillText("Time : " + this.game.globalTimer.timeString, this.view.width - 100, 20, 100);
         this.context.fillText("FPS : " + this.fps.toFixed(1), this.view.width - 100, 30, 100);
@@ -103,20 +109,54 @@ class Renderer {
         this.view.height = height;
     }
 
+    loadTowers() {
+        this.towers = [];
+        let towersBook = this.game.towersBook;
+        let imagesPaths = towersBook.towers.map(tower => {
+            return './images/towers/' + tower.image;
+        });
+
+        console.log(`${imagesPaths.length} towers textures to load.`);
+        return this.loadImages(imagesPaths).then(images => {
+            images.forEach((image, index) => {
+                this.towers.push({
+                    id: towersBook.towers[index].id,
+                    image: images[index]
+                });
+            });
+        }).then(() => {
+            console.log(this.towers)
+            console.log(`All units textures have been loaded.`);
+        });
+    }
+
     /**
      * Load all the units textures for the current scenario
      * @return {Promise} state promise
      */
     loadScenarioUnits() {
         this.units = [];
-        let units = this.game.scenario.units;
-        let imagesPaths = units.map(unit => './images/units/' + unit.fileName);
+        let unitsInScenario = [];
+        this.game.scenario.data.forEach(d => {
+            if(!unitsInScenario.includes(d.id)){
+                unitsInScenario.push(d.id);
+            }
+        });
+        let unitsBook = this.game.unitsBook;
+        let imagesPaths = unitsInScenario.map(id => {
+            let unitData = unitsBook.units.find(u => u.id === id);
+            if(!unitData) {
+                console.warn(`Unknown unit: ${id}`)
+                return './images/units/default.png';
+            }
+            return './images/units/' + unitData.image;
+        });
 
         console.log(`${imagesPaths.length} units textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.units.push({
-                    id: units[index].id,
+                    id: unitsInScenario[index],
                     image: images[index]
                 });
             });

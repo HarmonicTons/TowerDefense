@@ -1,11 +1,8 @@
 class Map {
     constructor(game, mapFile) {
         this.game = game;
-
         this.units = [];
-
-        let tower = new Tower(1,5,5,1,1,3);
-        this.towers = [tower];
+        this.towers = [];
     }
 
     /**
@@ -76,5 +73,17 @@ class Map {
         if (x < 0 || y < 0 || x >= this.width || y >= this.height) return -1;
         let index = this.indexAt(x, y);
         return this.data[index];
+    }
+
+
+    /**
+     * @static distance - Distance between two points
+     *
+     * @param  {object} u1 point 1
+     * @param  {object} u2 point 2
+     * @return {number}    distance
+     */
+    static distance(u1, u2) {
+        return Math.sqrt((u1.x - u2.x) * (u1.x - u2.x) + (u1.y - u2.y) * (u1.y - u2.y));
     }
 }
