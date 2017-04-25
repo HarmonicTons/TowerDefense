@@ -1,6 +1,7 @@
 class Game {
     constructor(canvas, mapFile, scenarioFile, unitsFile, towersFile) {
         this.canvas = canvas;
+        this.mouse = new Mouse(this);
         this.renderer = new Renderer(this, canvas);
         this.map = new Map(this);
         this.updater = new Updater(this);
@@ -35,18 +36,38 @@ class Game {
         });
     }
 
+
+    /**
+     * loadUnitsBook - Load the units book
+     *
+     * @param  {type} unitsFile path to json file
+     * @return {Promise} state promise, resolved when the units book is loaded
+     */
     loadUnitsBook(unitsFile) {
         return Unit.loadUnitsFile(unitsFile).then(unitsBook => {
             this.unitsBook = unitsBook;
         });
     }
 
+
+    /**
+     * loadTowersBook - Load the towers book
+     *
+     * @param  {type} towersFile path to the json file
+     * @return {Promise} state promise, resolved when the towers book is loaded
+     */
     loadTowersBook(towersFile) {
         return Tower.loadTowersFile(towersFile).then(towersBook => {
             this.towersBook = towersBook;
         });
     }
 
+
+    /**
+     * loadTowers - Load the tower sprites
+     *
+     * @return {Promise} state promise, resolved when the towers sprites are loaded 
+     */
     loadTowers() {
         return this.renderer.loadTowers();
     }
@@ -76,6 +97,18 @@ class Game {
 
 
     /**
+     * setMouseCoordinates - Set mouse position
+     *
+     * @param  {number} x
+     * @param  {number} y
+     */
+    setMouseCoordinates(x, y) {
+        this.mouse.screenCoordinates.x = x;
+        this.mouse.screenCoordinates.y = y;
+    }
+
+
+    /**
      * end - End the game
      *
      * @param  {boolean} isVictory true if the player won
@@ -87,7 +120,7 @@ class Game {
             console.log("GAMEOVER");
         }
 
-        this.renderer.stop();
+        //this.renderer.stop();
         this.updater.stop();
     }
 

@@ -33,12 +33,26 @@ class View {
      * Get the screen coordinates from the grid coordinates
      * @param {number} x horizontal grid coordinate
      * @param {number} y vertical grid coordinate
-     * @return {object} screen coordinates
+     * @return {object}  screen coordinates
      */
-    screenCoordinates(x,y) {
+    screenCoordinates(x, y) {
         return {
             x: (x - this.cameraPosition.x) * this.tileSize,
             y: (y - this.cameraPosition.y) * this.tileSize,
+        }
+    }
+
+    /**
+     * gridCoordinates - Get the grid coordinates from the screen coordinates
+     *
+     * @param  {number} x horizontal screen coordinates
+     * @param  {number} y vertical screen coordinates
+     * @return {object}   grid coordinates
+     */
+    gridCoordinates(x, y) {
+        return {
+            x: x / this.tileSize + this.cameraPosition.x,
+            y: y / this.tileSize + this.cameraPosition.y,
         }
     }
 }

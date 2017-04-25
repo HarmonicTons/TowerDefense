@@ -13,6 +13,13 @@ class Unit {
         return this.hp > 0;
     }
 
+
+    /**
+     * @static loadUnitsFile - Load a units book
+     *
+     * @param  {string} unitsFile path to the json file
+     * @return {Promise}         state promise
+     */
     static loadUnitsFile(unitsFile) {
         return Unit.openUnitsFile(unitsFile)
             .catch(error => {
@@ -23,8 +30,9 @@ class Unit {
 
     /**
      * Open a units file
+     * 
      * @param {string} unitsFile path to the file
-     * @return {Promise} promise of the units data
+     * @return {Promise}         promise of the units data
      */
     // this is a mimick for local tests only to avoid cross-origin protections
     static openUnitsFile(unitsFile) {
@@ -47,11 +55,21 @@ class Unit {
         }
     }
 
+
+    /**
+     * kill - Kill the unit
+     *
+     */
     kill() {
         this.hp = 0;
     }
 
+
+    /**
+     * die - Fire the unit death animation
+     *
+     */
     die() {
-        console.log("oh no");
+        //console.log("oh no");
     }
 }

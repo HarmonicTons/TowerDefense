@@ -20,6 +20,11 @@ class Renderer {
         this.stoped = false;
     }
 
+
+    /**
+     * stop - Stop the renderer
+     *
+     */
     stop() {
         console.log("Stoping render.");
         this.stoped = true;
@@ -40,8 +45,48 @@ class Renderer {
             this.lastFramesDuration.push(dt);
         }
 
+        // clear canvas
         this.context.clearRect(0, 0, this.view.width, this.view.height);
 
+        this.drawTiles();
+        this.drawUnits();
+        this.drawTowers();
+        this.drawHealthBars();
+        this.drawMouseCursor();
+
+        // draw monitoring
+        if (this.displayMonitoring) {
+            this.drawMonitoring();
+        }
+
+        // draw next frame
+        requestAnimationFrame(() => {
+            this.render();
+        });
+    }
+
+
+    /**
+     * drawMouseThingy - Draw the mouse cursor
+     *
+     */
+    drawMouseCursor() {
+        let sc = this.game.mouse.screenCoordinates;
+        let gridCoordinates = this.view.gridCoordinates(sc.x, sc.y);
+        let fx = Math.floor(gridCoordinates.x);
+        let fy = Math.floor(gridCoordinates.y);
+        let sc2 = this.view.screenCoordinates(fx, fy);
+        let ts = this.view.tileSize;
+        this.context.fillStyle = 'rgba(0,0,255,0.1)';
+        this.context.fillRect(sc2.x, sc2.y, ts, ts);
+    }
+
+
+    /**
+     * drawTiles - Draw every tiles of the map
+     *
+     */
+    drawTiles() {
         let map = this.game.map;
         // draw every tile of the map
         for (let x = 0; x < map.width; x++) {
@@ -55,8 +100,15 @@ class Renderer {
                 this.context.drawImage(image, sc.x, sc.y, ts, ts);
             }
         }
-        // draw every units on the map
-        map.units.forEach(unit => {
+    }
+
+
+    /**
+     * drawUnits - Draw every unit on the map
+     *
+     */
+    drawUnits() {
+        this.game.map.units.forEach(unit => {
             if (!unit.isAlive) return;
             let image = this.units.find(u => u.id === unit.id).image;
 
@@ -65,25 +117,15 @@ class Renderer {
             let ts = this.view.tileSize;
             this.context.drawImage(image, sc.x, sc.y, ts, ts);
         });
+    }
 
-        // draw every tower on the map
-        map.towers.forEach(tower => {
-            let image = this.towers.find(t => t.id === tower.id).image;
 
-            if (!image) return;
-            let sc = this.view.screenCoordinates(tower.x, tower.y);
-            let ts = this.view.tileSize;
-            this.context.drawImage(image, sc.x, sc.y, ts, ts);
-
-            // range display
-            this.context.beginPath();
-            this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
-            this.context.fillStyle= 'rgba(255,0,0,0.1)';
-            this.context.fill();
-        });
-
-        // draw hp bar
-        map.units.forEach(unit => {
+    /**
+     * drawHealthBars - Draw the health bars of the units
+     *
+     */
+    drawHealthBars() {
+        this.game.map.units.forEach(unit => {
             if (!unit.isAlive) return;
 
             let sc = this.view.screenCoordinates(unit.x, unit.y);
@@ -96,15 +138,27 @@ class Renderer {
             this.context.fillStyle = "red";
             this.context.fillRect(sc.x + ts * 1 / 8, sc.y - ts * 1 / 4, barSize, 5);
         });
+    }
 
-        // draw monitoring
-        if (this.displayMonitoring) {
-            this.drawMonitoring();
-        }
 
-        // draw next frame
-        requestAnimationFrame(() => {
-            this.render();
+    /**
+     * drawTowers - Draw every tower on the map
+     *
+     */
+    drawTowers() {
+        this.game.map.towers.forEach(tower => {
+            let image = this.towers.find(t => t.id === tower.id).image;
+
+            if (!image) return;
+            let sc = this.view.screenCoordinates(tower.x, tower.y);
+            let ts = this.view.tileSize;
+            this.context.drawImage(image, sc.x, sc.y, ts, ts);
+
+            // range display
+            this.context.beginPath();
+            this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+            this.context.fillStyle = 'rgba(255,0,0,0.1)';
+            this.context.fill();
         });
     }
 
@@ -118,6 +172,7 @@ class Renderer {
         this.context.fillText("Time : " + this.game.globalTimer.timeString, this.view.width - 100, 20, 100);
         this.context.fillText("FPS : " + this.fps.toFixed(1), this.view.width - 100, 30, 100);
         this.context.fillText("UPS : " + this.game.updater.ups.toFixed(1), this.view.width - 100, 40, 100);
+        this.context.fillText("Mouse : " + this.game.mouse.screenCoordinates.x + "," + this.game.mouse.screenCoordinates.y, this.view.width - 100, 50, 100);
     }
 
     /**
@@ -130,6 +185,12 @@ class Renderer {
         this.view.height = height;
     }
 
+
+    /**
+     * loadTowers - Load the images of the tower present in the tower book
+     *
+     * @return {Promise} state promise
+     */
     loadTowers() {
         this.towers = [];
         let towersBook = this.game.towersBook;
@@ -146,13 +207,13 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(this.towers)
             console.log(`All units textures have been loaded.`);
         });
     }
 
     /**
      * Load all the units textures for the current scenario
+     *
      * @return {Promise} state promise
      */
     loadScenarioUnits() {
@@ -190,6 +251,7 @@ class Renderer {
 
     /**
      * Load all the tiles textures for the current map
+     *
      * @return {Promise} state promise
      */
     loadMapTiles() {
@@ -213,6 +275,7 @@ class Renderer {
 
     /**
      * Load several images
+     *
      * @param {string[]} imagesPaths files paths
      * @return {Promise} promise of the images
      */
@@ -222,6 +285,7 @@ class Renderer {
 
     /**
      * Load an image from its file path
+     * 
      * @param {string} imagePath file path
      * @return {Promise} promise of the image
      */

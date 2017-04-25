@@ -12,5 +12,9 @@ class InputListener {
         elem.onclick = () => {
             //
         }
+
+        elem.onmousemove = (e) => {
+            this.game.setMouseCoordinates(e.layerX, e.layerY);
+        }
     }
 }

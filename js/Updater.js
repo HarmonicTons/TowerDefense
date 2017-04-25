@@ -9,11 +9,21 @@ class Updater {
         this.stoped = false;
     }
 
+
+    /**
+     * stop - Stop the updater
+     *
+     */
     stop() {
         console.log("Stoping update.");
         this.stoped = true;
     }
 
+
+    /**
+     * update - Update the game
+     *          
+     */
     update() {
         if (this.stoped) return;
         this.updates++;
@@ -89,7 +99,6 @@ class Updater {
             // if there is an unit in range
             if (closestUnit.unit) {
                 // attack unit
-                console.log("pew");
                 closestUnit.unit.takeDamage(tower.damages);
                 // reset cooldown
                 tower.timer.reset();
