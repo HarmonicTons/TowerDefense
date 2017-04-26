@@ -1,14 +1,11 @@
 class View {
     constructor(renderer, canvas, x = 0, y = 0, zoom = 1) {
         this.renderer = renderer;
-
         this.canvas = canvas;
-
         this.cameraPosition = {
             x: x,
             y: y
         };
-
         this.zoom = zoom;
 
         this.defaultTileSize = 32;
@@ -32,6 +29,12 @@ class View {
         return this.defaultTileSize * this.zoom;
     }
 
+    /**
+     * Get the screen coordinates from the grid coordinates
+     * @param {number} x horizontal grid coordinate
+     * @param {number} y vertical grid coordinate
+     * @return {object} screen coordinates
+     */
     screenCoordinates(x,y) {
         return {
             x: (x - this.cameraPosition.x) * this.tileSize,

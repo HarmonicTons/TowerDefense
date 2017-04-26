@@ -1,13 +1,5 @@
 document.addEventListener('DOMContentLoaded', main, false);
 
-
-let graphisms = [
-    {
-        name: 'Grass32',
-        filePath: './images/tiles/grass.png'
-    }
-];
-
 function main() {
     console.log("main");
 

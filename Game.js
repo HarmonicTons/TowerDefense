@@ -11,6 +11,11 @@ class Game {
 
     }
 
+    /**
+     * Load a map from a file
+     * @param {string} mapFile path to the json file
+     * @return {Promise} state promise, resolved when the map and its textures are loaded
+     */
     loadMap(mapFile) {
         return this.map.loadMapFile(mapFile).then(() => {
             return this.renderer.loadMapTiles();

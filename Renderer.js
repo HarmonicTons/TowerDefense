@@ -11,9 +11,13 @@ class Renderer {
         this.view = new View(this, canvas);
     }
 
+    /**
+     * Render the current frame
+     */
     render() {
         let map = this.game.map;
 
+        // draw every tile of the map
         for (let x = 0; x < map.width; x++) {
             for (let y = 0; y < map.height; y++) {
                 let tileId = map.tileAt(x, y);
@@ -25,16 +29,27 @@ class Renderer {
                 this.context.drawImage(image, sc.x, sc.y, ts, ts);
             }
         }
+
+        // draw next frame
         requestAnimationFrame(() => {
             this.render();
         });
     }
 
+    /**
+     * Set a new view
+     * @param {number} width
+     * @param {number} height
+     */
     setView(width, height) {
         this.view.width = width;
         this.view.height = height;
     }
 
+    /**
+     * Load all the tiles textures for the current map
+     * @return {Promise} state promise
+     */
     loadMapTiles() {
         this.tiles = [];
         let tiles = this.game.map.tiles;
