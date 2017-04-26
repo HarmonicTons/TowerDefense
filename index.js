@@ -1,3 +1,5 @@
+const Game = require('./js/Game.js');
+
 document.addEventListener('DOMContentLoaded', main, false);
 
 function main() {
@@ -5,7 +7,7 @@ function main() {
     let mapFile = './maps/map01.json';
     let scenarioFile = './scenarii/scen01.json';
     let unitsFile = './units/units01.json';
-    let towersFile = './units/towers01.json';
+    let towersFile = './towers/towers01.json';
 
     let game = new Game(canvas, mapFile, scenarioFile, unitsFile, towersFile);
 }

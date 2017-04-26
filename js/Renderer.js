@@ -1,3 +1,6 @@
+const Timer = require('./Timer.js');
+const View = require('./View.js');
+
 class Renderer {
     constructor(game, canvas) {
         this.game = game;
@@ -172,7 +175,7 @@ class Renderer {
         this.context.fillText("Time : " + this.game.globalTimer.timeString, this.view.width - 100, 20, 100);
         this.context.fillText("FPS : " + this.fps.toFixed(1), this.view.width - 100, 30, 100);
         this.context.fillText("UPS : " + this.game.updater.ups.toFixed(1), this.view.width - 100, 40, 100);
-        this.context.fillText("Mouse : " + this.game.mouse.screenCoordinates.x + "," + this.game.mouse.screenCoordinates.y, this.view.width - 100, 50, 100);
+        this.context.fillText("Mouse : " + this.game.mouse.gridCoordinates.x + "," + this.game.mouse.gridCoordinates.y, this.view.width - 100, 50, 100);
     }
 
     /**
@@ -184,7 +187,6 @@ class Renderer {
         this.view.width = width;
         this.view.height = height;
     }
-
 
     /**
      * loadTowers - Load the images of the tower present in the tower book
@@ -219,7 +221,8 @@ class Renderer {
     loadScenarioUnits() {
         this.units = [];
         let unitsInScenario = [];
-        this.game.scenario.waves.forEach(w => {
+        let scene = this.game.scene;
+        scene.scenario.waves.forEach(w => {
             w.forEach(d => {
                 if (!unitsInScenario.includes(d.id)) {
                     unitsInScenario.push(d.id);
@@ -285,7 +288,7 @@ class Renderer {
 
     /**
      * Load an image from its file path
-     * 
+     *
      * @param {string} imagePath file path
      * @return {Promise} promise of the image
      */
@@ -305,4 +308,10 @@ class Renderer {
             }
         });
     }
+
+    gridCoordinates(x,y) {
+        return this.view.gridCoordinates(x,y);
+    }
 }
+
+module.exports = Renderer;

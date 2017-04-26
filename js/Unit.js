@@ -1,3 +1,5 @@
+const helpers = require('./helpers.js');
+
 class Unit {
     constructor (id, x, y, speed, hp, pathIndex) {
         this.id = id;
@@ -30,23 +32,13 @@ class Unit {
 
     /**
      * Open a units file
-     * 
+     *
      * @param {string} unitsFile path to the file
      * @return {Promise}         promise of the units data
      */
-    // this is a mimick for local tests only to avoid cross-origin protections
     static openUnitsFile(unitsFile) {
-        let unitsFileName = unitsFile.split('/').slice(-1)[0];
-        let unitsBook = unitsBooks.find(m => m.file === unitsFileName);
-        if (!unitsBook) return Promise.reject("No such file.");
-        return Promise.resolve(unitsBook);
-    }
-
-    /*
-    openUnitsFile(unitsFile) {
         return helpers.loadJSON(unitsFile);
     }
-    */
 
     takeDamage(damages) {
         this.hp -= damages;
@@ -73,3 +65,5 @@ class Unit {
         //console.log("oh no");
     }
 }
+
+module.exports = Unit;

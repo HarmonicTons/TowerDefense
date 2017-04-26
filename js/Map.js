@@ -1,3 +1,5 @@
+const helpers = require('./helpers.js');
+
 class Map {
     constructor(game, mapFile) {
         this.game = game;
@@ -26,19 +28,9 @@ class Map {
      * @param {string} mapFile path to the file
      * @return {Promise} promise of the map data
      */
-    // this is a mimick for local tests only to avoid cross-origin protections
-    openMapFile(mapFile) {
-        let mapFileName = mapFile.split('/').slice(-1)[0];
-        let mapData = maps.find(m => m.file === mapFileName);
-        if (!mapData) return Promise.reject("No such file.");
-        return Promise.resolve(mapData);
-    }
-
-    /*
     openMapFile(mapFile) {
         return helpers.loadJSON(mapFile);
     }
-    */
 
     /**
      * Set the map data
@@ -87,3 +79,5 @@ class Map {
         return Math.sqrt((u1.x - u2.x) * (u1.x - u2.x) + (u1.y - u2.y) * (u1.y - u2.y));
     }
 }
+
+module.exports = Map;

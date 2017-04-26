@@ -1,3 +1,6 @@
+const Timer = require('./Timer.js');
+const Map = require('./Map.js');
+
 class Updater {
     constructor(game) {
         this.game = game;
@@ -22,7 +25,7 @@ class Updater {
 
     /**
      * update - Update the game
-     *          
+     *
      */
     update() {
         if (this.stoped) return;
@@ -37,7 +40,7 @@ class Updater {
         }
 
         let map = this.game.map;
-        let scenario = this.game.scenario;
+        let scene = this.game.scene;
 
         // update all the things
         let timestamp = this.game.globalTimer.now;
@@ -107,47 +110,8 @@ class Updater {
 
         });
 
-        //spawn new units
-        if (!scenario.isPaused) {
-            let unitsBook = this.game.unitsBook;
-            let unitsToSpawn = scenario.unitsToSpawn(timestamp);
-            let spawnPoint = map.unitPath[0];
-            unitsToSpawn.forEach(d => {
-                let unitData = unitsBook.units.find(u => u.id === d.id);
-                let unit = new Unit(d.id, spawnPoint.x, spawnPoint.y, unitData.speed, unitData.hp, 0);
-                map.units.push(unit);
-                d.spawned = true;
-            });
-
-            //if the wave is over
-            if (scenario.waveOver && unitsAlive.length === 0) {
-                // put on the scenario on hold
-                scenario.pause();
-                // prepare next wave
-                scenario.nextWave();
-                console.log("You have some time to improve your base.");
-                setTimeout(() => {
-
-                    // add a tower
-                    let towerData = this.game.towersBook.towers[2];
-                    let tower = new Tower(towerData.id, 11, 3, towerData.fireRate, towerData.damages, towerData.range);
-                    this.game.map.towers.push(tower);
-
-
-                    scenario.startWave();
-                },5000);
-            }
-
-            // if the game is over
-            // victory
-            if (scenario.isOver && unitsAlive.length === 0) {
-                this.game.end(1);
-            }
-            // defeat
-            if (this.game.baseHealth <= 0) {
-                this.game.end(0);
-            }
-        }
+        //if the wave is over
+        scene.update();
 
         // do next update
         // FIXME the loop period needs to become dynamic if the methode update() is longer than 5ms
@@ -156,3 +120,5 @@ class Updater {
         }, 5);
     }
 }
+
+module.exports = Updater;

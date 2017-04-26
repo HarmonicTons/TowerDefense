@@ -1,3 +1,6 @@
+const Timer = require('./Timer.js');
+const helpers = require('./helpers.js');
+
 class Tower {
     constructor(id, x, y, fireRate, damages, range) {
         this.id = id;
@@ -22,17 +25,9 @@ class Tower {
      * @param {string} towersFile path to the file
      * @return {Promise} promise of the units data
      */
-    // this is a mimick for local tests only to avoid cross-origin protections
     static openTowersFile(towersFile) {
-        let towersFileName = towersFile.split('/').slice(-1)[0];
-        let towersBook = towersBooks.find(m => m.file === towersFileName);
-        if (!towersBook) return Promise.reject("No such file.");
-        return Promise.resolve(towersBook);
-    }
-
-    /*
-    openTowersFile(towersFile) {
         return helpers.loadJSON(towersFile);
     }
-    */
 }
+
+module.exports = Tower;

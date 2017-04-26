@@ -4,8 +4,13 @@ class InputListener {
         this.elem = elem;
 
         window.onkeypress = e => {
+            console.log('Key pressed: ' + e.key);
             if (e.key === 'm') {
                 this.game.switchMonitoring();
+            }
+
+            else if (e.key === 'n') {
+                this.game.endBreak();
             }
         }
 
@@ -18,3 +23,5 @@ class InputListener {
         }
     }
 }
+
+module.exports = InputListener;

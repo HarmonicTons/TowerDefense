@@ -1,3 +1,13 @@
+const Mouse = require('./Mouse.js');
+const Renderer = require('./Renderer.js');
+const Map = require('./Map.js');
+const Updater = require('./Updater.js');
+const Scene = require('./Scene.js');
+const InputListener = require('./InputListener.js');
+const Timer = require('./Timer.js');
+const Unit = require('./Unit.js');
+const Tower = require('./Tower.js');
+
 class Game {
     constructor(canvas, mapFile, scenarioFile, unitsFile, towersFile) {
         this.canvas = canvas;
@@ -5,7 +15,7 @@ class Game {
         this.renderer = new Renderer(this, canvas);
         this.map = new Map(this);
         this.updater = new Updater(this);
-        this.scenario = new Scenario(this);
+        this.scene = new Scene(this);
         this.inputListener = new InputListener(this, canvas);
         this.renderer.setView(576, 384);
         this.unitsBook = {};
@@ -18,24 +28,25 @@ class Game {
             this.loadTowersBook(towersFile)
         ]).then(() => Promise.all([
             this.loadTowers(),
-            this.loadScenario(scenarioFile),
+            this.loadScenarioFile(scenarioFile),
             this.loadMap(mapFile)
         ])).then(() => {
 
-            // add a tower
-            let towerData = this.towersBook.towers[1];
-            let tower = new Tower(towerData.id, 5, 5, towerData.fireRate, towerData.damages, towerData.range);
-            this.map.towers.push(tower);
+            this.addTower(2,5,5);
 
             // start the motor
             this.renderer.render();
             this.updater.update();
 
-            // start the scenario
-            this.scenario.startWave();
+            // start the scene
+            this.scene.start();
         });
     }
 
+    loadScenarioFile(scenarioFile) {
+        return this.scene.loadScenario(scenarioFile)
+            .then(() => this.renderer.loadScenarioUnits());
+    }
 
     /**
      * loadUnitsBook - Load the units book
@@ -64,24 +75,39 @@ class Game {
 
 
     /**
+     * spawnNewUnit - Spawn an unit on the map at the spawn point
+     *
+     * @param  {number} id unit id
+     */
+    spawnNewUnit(id) {
+        let spawnPoint = this.map.unitPath[0];
+        this.addUnit(id, spawnPoint.x, spawnPoint.y);
+    }
+
+    addUnit(id, x, y) {
+        let unitData = this.unitsBook.units.find(u => u.id === id);
+        let unit = new Unit(id, x, y, unitData.speed, unitData.hp, 0);
+        this.map.units.push(unit);
+    }
+
+    addTower(id, x, y) {
+        let towerData = this.towersBook.towers.find(t => t.id === id);
+        let tower = new Tower(id, x, y, towerData.fireRate, towerData.damages, towerData.range);
+        this.map.towers.push(tower);
+    }
+
+    unitsAlive() {
+        return this.map.units.filter(u => u.isAlive);
+    }
+
+
+    /**
      * loadTowers - Load the tower sprites
      *
-     * @return {Promise} state promise, resolved when the towers sprites are loaded 
+     * @return {Promise} state promise, resolved when the towers sprites are loaded
      */
     loadTowers() {
         return this.renderer.loadTowers();
-    }
-
-    /**
-     * Load a scenario from a file
-     * @param {string} scenarioFile path to the json file
-     * @return {Promise} state promise, resolved when the scenario and its textures are loaded
-     */
-    loadScenario(scenarioFile) {
-        return this.scenario.loadScenarioFile(scenarioFile).then(() => {
-            this.baseHealth = this.scenario.baseHealth;
-            return this.renderer.loadScenarioUnits();
-        });
     }
 
     /**
@@ -107,6 +133,10 @@ class Game {
         this.mouse.screenCoordinates.y = y;
     }
 
+    gridCoordinates(x,y) {
+        return this.renderer.gridCoordinates(x,y);
+    }
+
 
     /**
      * end - End the game
@@ -124,6 +154,11 @@ class Game {
         this.updater.stop();
     }
 
+
+    endBreak() {
+        this.scene.startNextWave();
+    }
+
     /**
      * Switch wether or not the monitoring is displayed
      */
@@ -131,3 +166,5 @@ class Game {
         this.renderer.displayMonitoring = !this.renderer.displayMonitoring;
     }
 }
+
+module.exports = Game;

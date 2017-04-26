@@ -1,0 +1,27 @@
+{
+  "name": "towerdefense",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "webpack": "^2.4.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server -p 9000",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarmonicTons/TowerDefense.git"
+  },
+  "author": "HarmonicTons",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HarmonicTons/TowerDefense/issues"
+  },
+  "homepage": "https://github.com/HarmonicTons/TowerDefense#readme",
+  "dependencies": {
+    "http-server": "^0.9.0"
+  }
+}

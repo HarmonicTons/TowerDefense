@@ -1,6 +1,9 @@
+const Timer = require('./Timer.js');
+const helpers = require('./helpers.js');
+
 class Scenario {
-    constructor(game) {
-        this.game = game;
+    constructor(scene) {
+        this.scene = scene;
         this.timer = new Timer();
         this.isPaused = true;
     }
@@ -23,22 +26,12 @@ class Scenario {
 
     /**
      * Open a scenario file
-     * @param {string} mapFile path to the file
+     * @param {string} scenarioFile path to the file
      * @return {Promise} promise of the scenario data
      */
-    // this is a mimick for local tests only to avoid cross-origin protections
     openScenarioFile(scenarioFile) {
-        let scenarioFileName = scenarioFile.split('/').slice(-1)[0];
-        let scenarioData = scenarii.find(m => m.file === scenarioFileName);
-        if (!scenarioData) return Promise.reject("No such file.");
-        return Promise.resolve(scenarioData);
-    }
-
-    /*
-    openScenarioFile(mapFile) {
         return helpers.loadJSON(scenarioFile);
     }
-    */
 
 
     /**
@@ -70,7 +63,26 @@ class Scenario {
      *
      */
     pause() {
+        if(this.isPaused) {
+            console.warn("This scenario is already paused.");
+            return;
+        }
+        this.timer.pause();
         this.isPaused = true;
+    }
+
+
+    /**
+     * continue - Continue the scenario
+     *
+     */
+    continue() {
+        if(!this.isPaused) {
+            console.warn("This scenario is not currently paused.");
+            return;
+        }
+        this.timer.continue();
+        this.isPaused = false;
     }
 
     /**
@@ -122,3 +134,5 @@ class Scenario {
         return (!this.currentWave || this.timer.now > this.currentWave.slice(-1)[0].timestamp);
     }
 }
+
+module.exports = Scenario;
