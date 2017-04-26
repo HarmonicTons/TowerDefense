@@ -1,10 +1,12 @@
+const debug = require('./debug.js');
+
 class InputListener {
     constructor(game, elem) {
         this.game = game;
         this.elem = elem;
 
         window.onkeypress = e => {
-            console.log('Key pressed: ' + e.key);
+            debug.log('Key pressed: ' + e.key);
             if (e.key === 'm') {
                 this.game.switchMonitoring();
             }

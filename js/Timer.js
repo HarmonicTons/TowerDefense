@@ -1,3 +1,5 @@
+const debug = require('./debug.js');
+
 class Timer {
     constructor() {
         this._startAt = Date.now();
@@ -33,7 +35,7 @@ class Timer {
      */
     pause() {
         if (this.isPaused) {
-            console.warn('The current timer is already paused.');
+            debug.warn('The current timer is already paused.');
             return this.now;
         }
         this._pauses.push({
@@ -50,7 +52,7 @@ class Timer {
      */
     continue() {
         if (!this.isPaused) {
-            console.warn('The current timer is not paused.');
+            debug.warn('The current timer is not paused.');
             return this.now;
         }
         this._pauses.slice(-1)[0].endAt = Date.now();

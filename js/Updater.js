@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Timer = require('./Timer.js');
 const Map = require('./Map.js');
 
@@ -18,7 +19,7 @@ class Updater {
      *
      */
     stop() {
-        console.log("Stoping update.");
+        debug.log("Stoping update.");
         this.stoped = true;
     }
 
@@ -71,7 +72,7 @@ class Updater {
                 unit.pathIndex++;
 
                 if (unit.pathIndex >= map.unitPath.length - 1) {
-                    console.log("BOOM!");
+                    debug.log("BOOM!");
                     this.game.baseHealth--;
                     unit.kill();
                 }

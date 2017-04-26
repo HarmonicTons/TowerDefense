@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Timer = require('./Timer.js');
 const helpers = require('./helpers.js');
 
@@ -15,7 +16,7 @@ class Tower {
     static loadTowersFile(towersFile) {
         return Tower.openTowersFile(towersFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the units file ${towersFile}.`);
             });
     }

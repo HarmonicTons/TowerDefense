@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const helpers = require('./helpers.js');
 
 class Unit {
@@ -25,7 +26,7 @@ class Unit {
     static loadUnitsFile(unitsFile) {
         return Unit.openUnitsFile(unitsFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the units file ${unitsFile}.`);
             });
     }
@@ -62,7 +63,7 @@ class Unit {
      *
      */
     die() {
-        //console.log("oh no");
+        //debug.log("oh no");
     }
 }
 

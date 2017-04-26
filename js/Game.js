@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Mouse = require('./Mouse.js');
 const Renderer = require('./Renderer.js');
 const Map = require('./Map.js');
@@ -145,9 +146,9 @@ class Game {
      */
     end(isVictory) {
         if (isVictory) {
-            console.log("YOU WON");
+            debug.log("YOU WON");
         } else {
-            console.log("GAMEOVER");
+            debug.log("GAMEOVER");
         }
 
         //this.renderer.stop();

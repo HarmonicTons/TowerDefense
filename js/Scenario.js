@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Timer = require('./Timer.js');
 const helpers = require('./helpers.js');
 
@@ -16,7 +17,7 @@ class Scenario {
     loadScenarioFile(scenarioFile) {
         return this.openScenarioFile(scenarioFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
             })
             .then(scenarioData => {
@@ -39,7 +40,7 @@ class Scenario {
      *
      */
     startWave() {
-        console.log(`Starting wave #${this._waveIndex+1}`);
+        debug.log(`Starting wave #${this._waveIndex+1}`);
         this.timer.reset();
         this.isPaused = false;
     }
@@ -64,7 +65,7 @@ class Scenario {
      */
     pause() {
         if(this.isPaused) {
-            console.warn("This scenario is already paused.");
+            debug.warn("This scenario is already paused.");
             return;
         }
         this.timer.pause();
@@ -78,7 +79,7 @@ class Scenario {
      */
     continue() {
         if(!this.isPaused) {
-            console.warn("This scenario is not currently paused.");
+            debug.warn("This scenario is not currently paused.");
             return;
         }
         this.timer.continue();

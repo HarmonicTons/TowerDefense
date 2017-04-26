@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Timer = require('./Timer.js');
 const View = require('./View.js');
 
@@ -29,7 +30,7 @@ class Renderer {
      *
      */
     stop() {
-        console.log("Stoping render.");
+        debug.log("Stoping render.");
         this.stoped = true;
     }
 
@@ -200,7 +201,7 @@ class Renderer {
             return './images/towers/' + tower.image;
         });
 
-        console.log(`${imagesPaths.length} towers textures to load.`);
+        debug.log(`${imagesPaths.length} towers textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.towers.push({
@@ -209,7 +210,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All units textures have been loaded.`);
+            debug.log(`All towers textures have been loaded.`);
         });
     }
 
@@ -233,13 +234,13 @@ class Renderer {
         let imagesPaths = unitsInScenario.map(id => {
             let unitData = unitsBook.units.find(u => u.id === id);
             if (!unitData) {
-                console.warn(`Unknown unit: ${id}`)
+                debug.warn(`Unknown unit: ${id}`)
                 return './images/units/default.png';
             }
             return './images/units/' + unitData.image;
         });
 
-        console.log(`${imagesPaths.length} units textures to load.`);
+        debug.log(`${imagesPaths.length} units textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.units.push({
@@ -248,7 +249,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All units textures have been loaded.`);
+            debug.log(`All units textures have been loaded.`);
         });
     }
 
@@ -262,7 +263,7 @@ class Renderer {
         let tiles = this.game.map.tiles;
         let imagesPaths = tiles.map(tile => './images/tiles/' + tile.fileName);
 
-        console.log(`${imagesPaths.length} tiles textures to load.`);
+        debug.log(`${imagesPaths.length} tiles textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.tiles.push({
@@ -271,7 +272,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All tiles textures have been loaded.`);
+            debug.log(`All tiles textures have been loaded.`);
         });
     }
 
@@ -293,17 +294,17 @@ class Renderer {
      * @return {Promise} promise of the image
      */
     loadImage(imagePath) {
-        console.log(`Loading ${imagePath}...`);
+        debug.log(`Loading ${imagePath}...`);
         let img = new Image();
         img.src = imagePath;
 
         return new Promise(function(resolve, reject) {
             img.onload = function() {
-                console.log(`${imagePath} loaded.`);
+                debug.log(`${imagePath} loaded.`);
                 resolve(img);
             };
             img.onerror = function() {
-                console.warn(`${imagePath} not found.`);
+                debug.warn(`${imagePath} not found.`);
                 resolve();
             }
         });

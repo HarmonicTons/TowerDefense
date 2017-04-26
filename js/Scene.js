@@ -1,3 +1,4 @@
+const debug = require('./debug.js');
 const Scenario = require('./Scenario.js');
 
 class Scene {
@@ -29,19 +30,19 @@ class Scene {
 
     startBreak() {
         if (this.statusIndex === 1 ) {
-            console.warn("The game is already in break phase.");
+            debug.warn("The game is already in break phase.");
             return;
         }
-        console.log("Break phase.");
+        debug.log("Break phase.");
         this.statusIndex = 1;
     }
 
     startNextWave() {
         if (this.statusIndex === 0 ) {
-            console.warn("The game is already in wave phase.");
+            debug.warn("The game is already in wave phase.");
             return;
         }
-        console.log("Wave phase.");
+        debug.log("Wave phase.");
         this.statusIndex = 0;
         this.scenario.nextWave();
         this.scenario.startWave();

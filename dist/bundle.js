@@ -63,12 +63,14 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+const debug = __webpack_require__(4);
 
 class Timer {
     constructor() {
@@ -105,7 +107,7 @@ class Timer {
      */
     pause() {
         if (this.isPaused) {
-            console.warn('The current timer is already paused.');
+            debug.warn('The current timer is already paused.');
             return this.now;
         }
         this._pauses.push({
@@ -122,7 +124,7 @@ class Timer {
      */
     continue() {
         if (!this.isPaused) {
-            console.warn('The current timer is not paused.');
+            debug.warn('The current timer is not paused.');
             return this.now;
         }
         this._pauses.slice(-1)[0].endAt = Date.now();
@@ -189,6 +191,7 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 const helpers = __webpack_require__(1);
+const debug = __webpack_require__(4);
 
 class Map {
     constructor(game, mapFile) {
@@ -205,7 +208,7 @@ class Map {
     loadMapFile(mapFile) {
         return this.openMapFile(mapFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
             })
             .then(mapData => {
@@ -277,15 +280,16 @@ module.exports = Map;
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Mouse = __webpack_require__(6);
-const Renderer = __webpack_require__(7);
+const debug = __webpack_require__(4);
+const Mouse = __webpack_require__(7);
+const Renderer = __webpack_require__(8);
 const Map = __webpack_require__(2);
-const Updater = __webpack_require__(12);
-const Scene = __webpack_require__(9);
-const InputListener = __webpack_require__(5);
+const Updater = __webpack_require__(13);
+const Scene = __webpack_require__(10);
+const InputListener = __webpack_require__(6);
 const Timer = __webpack_require__(0);
-const Unit = __webpack_require__(11);
-const Tower = __webpack_require__(10);
+const Unit = __webpack_require__(12);
+const Tower = __webpack_require__(11);
 
 class Game {
     constructor(canvas, mapFile, scenarioFile, unitsFile, towersFile) {
@@ -424,9 +428,9 @@ class Game {
      */
     end(isVictory) {
         if (isVictory) {
-            console.log("YOU WON");
+            debug.log("YOU WON");
         } else {
-            console.log("GAMEOVER");
+            debug.log("GAMEOVER");
         }
 
         //this.renderer.stop();
@@ -451,13 +455,48 @@ module.exports = Game;
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    get time() {
+        let currentDate = new Date();
+        let yea = currentDate.getFullYear();
+        let mon = currentDate.getMonth();
+        let day = currentDate.getDay();
+        let hou = currentDate.getHours();
+        let min = currentDate.getMinutes();
+        let sec = currentDate.getSeconds();
+        let mil = currentDate.getMilliseconds();
+
+        return `${yea}/${mon}/${day} ${hou}:${min}:${sec}:${mil}`;
+    },
+
+    log: function(msg) {
+        console.log(`%c[${this.time}] %c${msg}`, "color: #AAA", "color: #111");
+    },
+
+    warn: function(msg) {
+        console.warn(`[${this.time}] ${msg}`);
+    },
+
+    error: function(msg) {
+        console.error(`[${this.time}] ${msg}`);
+    }
+}
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const Game = __webpack_require__(3);
+const debug = __webpack_require__(4);
 
 document.addEventListener('DOMContentLoaded', main, false);
 
 function main() {
+    debug.log("TOWER DEFENSE");
+
     let canvas = document.getElementById("viewCanvas");
     let mapFile = './maps/map01.json';
     let scenarioFile = './scenarii/scen01.json';
@@ -469,8 +508,10 @@ function main() {
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const debug = __webpack_require__(4);
 
 class InputListener {
     constructor(game, elem) {
@@ -478,7 +519,7 @@ class InputListener {
         this.elem = elem;
 
         window.onkeypress = e => {
-            console.log('Key pressed: ' + e.key);
+            debug.log('Key pressed: ' + e.key);
             if (e.key === 'm') {
                 this.game.switchMonitoring();
             }
@@ -502,7 +543,7 @@ module.exports = InputListener;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports) {
 
 class Mouse {
@@ -531,11 +572,12 @@ module.exports = Mouse;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const debug = __webpack_require__(4);
 const Timer = __webpack_require__(0);
-const View = __webpack_require__(13);
+const View = __webpack_require__(14);
 
 class Renderer {
     constructor(game, canvas) {
@@ -565,7 +607,7 @@ class Renderer {
      *
      */
     stop() {
-        console.log("Stoping render.");
+        debug.log("Stoping render.");
         this.stoped = true;
     }
 
@@ -736,7 +778,7 @@ class Renderer {
             return './images/towers/' + tower.image;
         });
 
-        console.log(`${imagesPaths.length} towers textures to load.`);
+        debug.log(`${imagesPaths.length} towers textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.towers.push({
@@ -745,7 +787,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All units textures have been loaded.`);
+            debug.log(`All towers textures have been loaded.`);
         });
     }
 
@@ -769,13 +811,13 @@ class Renderer {
         let imagesPaths = unitsInScenario.map(id => {
             let unitData = unitsBook.units.find(u => u.id === id);
             if (!unitData) {
-                console.warn(`Unknown unit: ${id}`)
+                debug.warn(`Unknown unit: ${id}`)
                 return './images/units/default.png';
             }
             return './images/units/' + unitData.image;
         });
 
-        console.log(`${imagesPaths.length} units textures to load.`);
+        debug.log(`${imagesPaths.length} units textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.units.push({
@@ -784,7 +826,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All units textures have been loaded.`);
+            debug.log(`All units textures have been loaded.`);
         });
     }
 
@@ -798,7 +840,7 @@ class Renderer {
         let tiles = this.game.map.tiles;
         let imagesPaths = tiles.map(tile => './images/tiles/' + tile.fileName);
 
-        console.log(`${imagesPaths.length} tiles textures to load.`);
+        debug.log(`${imagesPaths.length} tiles textures to load.`);
         return this.loadImages(imagesPaths).then(images => {
             images.forEach((image, index) => {
                 this.tiles.push({
@@ -807,7 +849,7 @@ class Renderer {
                 });
             });
         }).then(() => {
-            console.log(`All tiles textures have been loaded.`);
+            debug.log(`All tiles textures have been loaded.`);
         });
     }
 
@@ -829,17 +871,17 @@ class Renderer {
      * @return {Promise} promise of the image
      */
     loadImage(imagePath) {
-        console.log(`Loading ${imagePath}...`);
+        debug.log(`Loading ${imagePath}...`);
         let img = new Image();
         img.src = imagePath;
 
         return new Promise(function(resolve, reject) {
             img.onload = function() {
-                console.log(`${imagePath} loaded.`);
+                debug.log(`${imagePath} loaded.`);
                 resolve(img);
             };
             img.onerror = function() {
-                console.warn(`${imagePath} not found.`);
+                debug.warn(`${imagePath} not found.`);
                 resolve();
             }
         });
@@ -854,9 +896,10 @@ module.exports = Renderer;
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const debug = __webpack_require__(4);
 const Timer = __webpack_require__(0);
 const helpers = __webpack_require__(1);
 
@@ -875,7 +918,7 @@ class Scenario {
     loadScenarioFile(scenarioFile) {
         return this.openScenarioFile(scenarioFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
             })
             .then(scenarioData => {
@@ -898,7 +941,7 @@ class Scenario {
      *
      */
     startWave() {
-        console.log(`Starting wave #${this._waveIndex+1}`);
+        debug.log(`Starting wave #${this._waveIndex+1}`);
         this.timer.reset();
         this.isPaused = false;
     }
@@ -923,7 +966,7 @@ class Scenario {
      */
     pause() {
         if(this.isPaused) {
-            console.warn("This scenario is already paused.");
+            debug.warn("This scenario is already paused.");
             return;
         }
         this.timer.pause();
@@ -937,7 +980,7 @@ class Scenario {
      */
     continue() {
         if(!this.isPaused) {
-            console.warn("This scenario is not currently paused.");
+            debug.warn("This scenario is not currently paused.");
             return;
         }
         this.timer.continue();
@@ -998,10 +1041,11 @@ module.exports = Scenario;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Scenario = __webpack_require__(8);
+const debug = __webpack_require__(4);
+const Scenario = __webpack_require__(9);
 
 class Scene {
     constructor(game) {
@@ -1032,19 +1076,19 @@ class Scene {
 
     startBreak() {
         if (this.statusIndex === 1 ) {
-            console.warn("The game is already in break phase.");
+            debug.warn("The game is already in break phase.");
             return;
         }
-        console.log("Break phase.");
+        debug.log("Break phase.");
         this.statusIndex = 1;
     }
 
     startNextWave() {
         if (this.statusIndex === 0 ) {
-            console.warn("The game is already in wave phase.");
+            debug.warn("The game is already in wave phase.");
             return;
         }
-        console.log("Wave phase.");
+        debug.log("Wave phase.");
         this.statusIndex = 0;
         this.scenario.nextWave();
         this.scenario.startWave();
@@ -1080,9 +1124,10 @@ module.exports = Scene;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const debug = __webpack_require__(4);
 const Timer = __webpack_require__(0);
 const helpers = __webpack_require__(1);
 
@@ -1100,7 +1145,7 @@ class Tower {
     static loadTowersFile(towersFile) {
         return Tower.openTowersFile(towersFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the units file ${towersFile}.`);
             });
     }
@@ -1119,9 +1164,10 @@ module.exports = Tower;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const debug = __webpack_require__(4);
 const helpers = __webpack_require__(1);
 
 class Unit {
@@ -1149,7 +1195,7 @@ class Unit {
     static loadUnitsFile(unitsFile) {
         return Unit.openUnitsFile(unitsFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the units file ${unitsFile}.`);
             });
     }
@@ -1186,7 +1232,7 @@ class Unit {
      *
      */
     die() {
-        //console.log("oh no");
+        //debug.log("oh no");
     }
 }
 
@@ -1194,9 +1240,10 @@ module.exports = Unit;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
+const debug = __webpack_require__(4);
 const Timer = __webpack_require__(0);
 const Map = __webpack_require__(2);
 
@@ -1217,7 +1264,7 @@ class Updater {
      *
      */
     stop() {
-        console.log("Stoping update.");
+        debug.log("Stoping update.");
         this.stoped = true;
     }
 
@@ -1270,7 +1317,7 @@ class Updater {
                 unit.pathIndex++;
 
                 if (unit.pathIndex >= map.unitPath.length - 1) {
-                    console.log("BOOM!");
+                    debug.log("BOOM!");
                     this.game.baseHealth--;
                     unit.kill();
                 }
@@ -1324,7 +1371,7 @@ module.exports = Updater;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 class View {

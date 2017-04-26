@@ -1,4 +1,5 @@
 const helpers = require('./helpers.js');
+const debug = require('./debug.js');
 
 class Map {
     constructor(game, mapFile) {
@@ -15,7 +16,7 @@ class Map {
     loadMapFile(mapFile) {
         return this.openMapFile(mapFile)
             .catch(error => {
-                console.error(error);
+                debug.error(error);
                 return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
             })
             .then(mapData => {
