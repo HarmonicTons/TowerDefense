@@ -63,14 +63,46 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    get time() {
+        let currentDate = new Date();
+        let yea = currentDate.getFullYear();
+        let mon = currentDate.getMonth();
+        let day = currentDate.getDay();
+        let hou = currentDate.getHours();
+        let min = currentDate.getMinutes();
+        let sec = currentDate.getSeconds();
+        let mil = currentDate.getMilliseconds();
+
+        return `${yea}/${mon}/${day} ${hou}:${min}:${sec}:${mil}`;
+    },
+
+    log: function(...msgs) {
+        console.log(`%c[${this.time}] %c${msgs}`, "color: #AAA", "color: #111");
+    },
+
+    warn: function(...msgs) {
+        console.warn(`[${this.time}] ${msgs}`);
+    },
+
+    error: function(...msgs) {
+        console.error(`[${this.time}] ${msgs}`);
+    }
+}
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
+const debug = __webpack_require__(0);
 
 class Timer {
     constructor() {
@@ -159,7 +191,7 @@ module.exports = Timer;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports) {
 
 module.exports = {
@@ -187,11 +219,46 @@ module.exports = {
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const helpers = __webpack_require__(1);
-const debug = __webpack_require__(4);
+const debug = __webpack_require__(0);
+
+class InputListener {
+    constructor(game, elem) {
+        this.game = game;
+        this.elem = elem;
+
+        window.onkeypress = e => {
+            debug.log('Key pressed: ' + e.key);
+            if (e.key === 'm') {
+                this.game.switchMonitoring();
+            }
+
+            else if (e.key === 'n') {
+                this.game.endBreak();
+            }
+        }
+
+        elem.onclick = (e) => {
+            this.game.mapClick(e.layerX, e.layerY);
+        }
+
+        elem.onmousemove = (e) => {
+            this.game.setMouseCoordinates(e.layerX, e.layerY);
+        }
+    }
+}
+
+module.exports = InputListener;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const helpers = __webpack_require__(2);
+const debug = __webpack_require__(0);
 
 class Map {
     constructor(game, mapFile) {
@@ -277,19 +344,285 @@ module.exports = Map;
 
 
 /***/ }),
-/* 3 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Mouse = __webpack_require__(7);
-const Renderer = __webpack_require__(8);
-const Map = __webpack_require__(2);
-const Updater = __webpack_require__(13);
-const Scene = __webpack_require__(10);
-const InputListener = __webpack_require__(6);
-const Timer = __webpack_require__(0);
-const Unit = __webpack_require__(12);
-const Tower = __webpack_require__(11);
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
+Copyright (c) 2010,2011,2012,2013,2014 Morgan Roderick http://roderick.dk
+License: MIT - http://mrgnrdrck.mit-license.org
+
+https://github.com/mroderick/PubSubJS
+*/
+(function (root, factory){
+	'use strict';
+
+    if (true){
+        // AMD. Register as an anonymous module.
+        !(__WEBPACK_AMD_DEFINE_ARRAY__ = [exports], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+
+    } else if (typeof exports === 'object'){
+        // CommonJS
+        factory(exports);
+
+    }
+
+    // Browser globals
+    var PubSub = {};
+    root.PubSub = PubSub;
+    factory(PubSub);
+
+}(( typeof window === 'object' && window ) || this, function (PubSub){
+	'use strict';
+
+	var messages = {},
+		lastUid = -1;
+
+	function hasKeys(obj){
+		var key;
+
+		for (key in obj){
+			if ( obj.hasOwnProperty(key) ){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 *	Returns a function that throws the passed exception, for use as argument for setTimeout
+	 *	@param { Object } ex An Error object
+	 */
+	function throwException( ex ){
+		return function reThrowException(){
+			throw ex;
+		};
+	}
+
+	function callSubscriberWithDelayedExceptions( subscriber, message, data ){
+		try {
+			subscriber( message, data );
+		} catch( ex ){
+			setTimeout( throwException( ex ), 0);
+		}
+	}
+
+	function callSubscriberWithImmediateExceptions( subscriber, message, data ){
+		subscriber( message, data );
+	}
+
+	function deliverMessage( originalMessage, matchedMessage, data, immediateExceptions ){
+		var subscribers = messages[matchedMessage],
+			callSubscriber = immediateExceptions ? callSubscriberWithImmediateExceptions : callSubscriberWithDelayedExceptions,
+			s;
+
+		if ( !messages.hasOwnProperty( matchedMessage ) ) {
+			return;
+		}
+
+		for (s in subscribers){
+			if ( subscribers.hasOwnProperty(s)){
+				callSubscriber( subscribers[s], originalMessage, data );
+			}
+		}
+	}
+
+	function createDeliveryFunction( message, data, immediateExceptions ){
+		return function deliverNamespaced(){
+			var topic = String( message ),
+				position = topic.lastIndexOf( '.' );
+
+			// deliver the message as it is now
+			deliverMessage(message, message, data, immediateExceptions);
+
+			// trim the hierarchy and deliver message to each level
+			while( position !== -1 ){
+				topic = topic.substr( 0, position );
+				position = topic.lastIndexOf('.');
+				deliverMessage( message, topic, data, immediateExceptions );
+			}
+		};
+	}
+
+	function messageHasSubscribers( message ){
+		var topic = String( message ),
+			found = Boolean(messages.hasOwnProperty( topic ) && hasKeys(messages[topic])),
+			position = topic.lastIndexOf( '.' );
+
+		while ( !found && position !== -1 ){
+			topic = topic.substr( 0, position );
+			position = topic.lastIndexOf( '.' );
+			found = Boolean(messages.hasOwnProperty( topic ) && hasKeys(messages[topic]));
+		}
+
+		return found;
+	}
+
+	function publish( message, data, sync, immediateExceptions ){
+		var deliver = createDeliveryFunction( message, data, immediateExceptions ),
+			hasSubscribers = messageHasSubscribers( message );
+
+		if ( !hasSubscribers ){
+			return false;
+		}
+
+		if ( sync === true ){
+			deliver();
+		} else {
+			setTimeout( deliver, 0 );
+		}
+		return true;
+	}
+
+	/**
+	 *	PubSub.publish( message[, data] ) -> Boolean
+	 *	- message (String): The message to publish
+	 *	- data: The data to pass to subscribers
+	 *	Publishes the the message, passing the data to it's subscribers
+	**/
+	PubSub.publish = function( message, data ){
+		return publish( message, data, false, PubSub.immediateExceptions );
+	};
+
+	/**
+	 *	PubSub.publishSync( message[, data] ) -> Boolean
+	 *	- message (String): The message to publish
+	 *	- data: The data to pass to subscribers
+	 *	Publishes the the message synchronously, passing the data to it's subscribers
+	**/
+	PubSub.publishSync = function( message, data ){
+		return publish( message, data, true, PubSub.immediateExceptions );
+	};
+
+	/**
+	 *	PubSub.subscribe( message, func ) -> String
+	 *	- message (String): The message to subscribe to
+	 *	- func (Function): The function to call when a new message is published
+	 *	Subscribes the passed function to the passed message. Every returned token is unique and should be stored if
+	 *	you need to unsubscribe
+	**/
+	PubSub.subscribe = function( message, func ){
+		if ( typeof func !== 'function'){
+			return false;
+		}
+
+		// message is not registered yet
+		if ( !messages.hasOwnProperty( message ) ){
+			messages[message] = {};
+		}
+
+		// forcing token as String, to allow for future expansions without breaking usage
+		// and allow for easy use as key names for the 'messages' object
+		var token = 'uid_' + String(++lastUid);
+		messages[message][token] = func;
+
+		// return token for unsubscribing
+		return token;
+	};
+
+	/* Public: Clears all subscriptions
+	 */
+	PubSub.clearAllSubscriptions = function clearAllSubscriptions(){
+		messages = {};
+	};
+
+	/*Public: Clear subscriptions by the topic
+	*/
+	PubSub.clearSubscriptions = function clearSubscriptions(topic){
+		var m;
+		for (m in messages){
+			if (messages.hasOwnProperty(m) && m.indexOf(topic) === 0){
+				delete messages[m];
+			}
+		}
+	};
+
+	/* Public: removes subscriptions.
+	 * When passed a token, removes a specific subscription.
+	 * When passed a function, removes all subscriptions for that function
+	 * When passed a topic, removes all subscriptions for that topic (hierarchy)
+	 *
+	 * value - A token, function or topic to unsubscribe.
+	 *
+	 * Examples
+	 *
+	 *		// Example 1 - unsubscribing with a token
+	 *		var token = PubSub.subscribe('mytopic', myFunc);
+	 *		PubSub.unsubscribe(token);
+	 *
+	 *		// Example 2 - unsubscribing with a function
+	 *		PubSub.unsubscribe(myFunc);
+	 *
+	 *		// Example 3 - unsubscribing a topic
+	 *		PubSub.unsubscribe('mytopic');
+	 */
+	PubSub.unsubscribe = function(value){
+		var descendantTopicExists = function(topic) {
+				var m;
+				for ( m in messages ){
+					if ( messages.hasOwnProperty(m) && m.indexOf(topic) === 0 ){
+						// a descendant of the topic exists:
+						return true;
+					}
+				}
+
+				return false;
+			},
+			isTopic    = typeof value === 'string' && ( messages.hasOwnProperty(value) || descendantTopicExists(value) ),
+			isToken    = !isTopic && typeof value === 'string',
+			isFunction = typeof value === 'function',
+			result = false,
+			m, message, t;
+
+		if (isTopic){
+			PubSub.clearSubscriptions(value);
+			return;
+		}
+
+		for ( m in messages ){
+			if ( messages.hasOwnProperty( m ) ){
+				message = messages[m];
+
+				if ( isToken && message[value] ){
+					delete message[value];
+					result = value;
+					// tokens are unique, so we can just stop here
+					break;
+				}
+
+				if (isFunction) {
+					for ( t in message ){
+						if (message.hasOwnProperty(t) && message[t] === value){
+							delete message[t];
+							result = true;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+}));
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const debug = __webpack_require__(0);
+const PubSub = __webpack_require__(5);
+const Mouse = __webpack_require__(9);
+const Renderer = __webpack_require__(10);
+const Map = __webpack_require__(4);
+const Updater = __webpack_require__(15);
+const Scene = __webpack_require__(12);
+const InputListener = __webpack_require__(3);
+const Timer = __webpack_require__(1);
+const Unit = __webpack_require__(14);
+const Tower = __webpack_require__(13);
 
 class Game {
     constructor(canvas, mapFile, scenarioFile, unitsFile, towersFile) {
@@ -315,7 +648,7 @@ class Game {
             this.loadMap(mapFile)
         ])).then(() => {
 
-            this.addTower(2,5,5);
+            this.addTower(2, 5, 5);
 
             // start the motor
             this.renderer.render();
@@ -416,8 +749,8 @@ class Game {
         this.mouse.screenCoordinates.y = y;
     }
 
-    gridCoordinates(x,y) {
-        return this.renderer.gridCoordinates(x,y);
+    gridCoordinates(x, y) {
+        return this.renderer.gridCoordinates(x, y);
     }
 
 
@@ -437,6 +770,13 @@ class Game {
         this.updater.stop();
     }
 
+    mapClick(x, y) {
+        PubSub.publish('onClickMap', {
+            x: x,
+            y: y
+        });
+    }
+
 
     endBreak() {
         this.scene.startNextWave();
@@ -454,43 +794,11 @@ module.exports = Game;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = {
-    get time() {
-        let currentDate = new Date();
-        let yea = currentDate.getFullYear();
-        let mon = currentDate.getMonth();
-        let day = currentDate.getDay();
-        let hou = currentDate.getHours();
-        let min = currentDate.getMinutes();
-        let sec = currentDate.getSeconds();
-        let mil = currentDate.getMilliseconds();
-
-        return `${yea}/${mon}/${day} ${hou}:${min}:${sec}:${mil}`;
-    },
-
-    log: function(msg) {
-        console.log(`%c[${this.time}] %c${msg}`, "color: #AAA", "color: #111");
-    },
-
-    warn: function(msg) {
-        console.warn(`[${this.time}] ${msg}`);
-    },
-
-    error: function(msg) {
-        console.error(`[${this.time}] ${msg}`);
-    }
-}
-
-
-/***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Game = __webpack_require__(3);
-const debug = __webpack_require__(4);
+const Game = __webpack_require__(6);
+const debug = __webpack_require__(0);
 
 document.addEventListener('DOMContentLoaded', main, false);
 
@@ -499,7 +807,7 @@ function main() {
 
     let canvas = document.getElementById("viewCanvas");
     let mapFile = './maps/map01.json';
-    let scenarioFile = './scenarii/scen01.json';
+    let scenarioFile = './scenarii/scen03.json';
     let unitsFile = './units/units01.json';
     let towersFile = './towers/towers01.json';
 
@@ -508,42 +816,31 @@ function main() {
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
+const PubSub = __webpack_require__(5);
 
-class InputListener {
-    constructor(game, elem) {
-        this.game = game;
-        this.elem = elem;
+class Action {
+    constructor(scene, id, name, description, operation, triggersEvent) {
+        this.scene = scene;
+        this.name = name;
+        this.id = id;
+        this.description = description;
+        let doOperation = (eventName, eventData) => operation.call(scene, eventData);
+        this.triggers = triggersEvent.map(triggerEvent => PubSub.subscribe(triggerEvent, doOperation));
+    }
 
-        window.onkeypress = e => {
-            debug.log('Key pressed: ' + e.key);
-            if (e.key === 'm') {
-                this.game.switchMonitoring();
-            }
-
-            else if (e.key === 'n') {
-                this.game.endBreak();
-            }
-        }
-
-        elem.onclick = () => {
-            //
-        }
-
-        elem.onmousemove = (e) => {
-            this.game.setMouseCoordinates(e.layerX, e.layerY);
-        }
+    deactivate() {
+        this.triggers.forEach(trigger => PubSub.unsubscribe(trigger));
     }
 }
 
-module.exports = InputListener;
+module.exports = Action;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 class Mouse {
@@ -572,12 +869,12 @@ module.exports = Mouse;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Timer = __webpack_require__(0);
-const View = __webpack_require__(14);
+const debug = __webpack_require__(0);
+const Timer = __webpack_require__(1);
+const View = __webpack_require__(16);
 
 class Renderer {
     constructor(game, canvas) {
@@ -896,12 +1193,12 @@ module.exports = Renderer;
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Timer = __webpack_require__(0);
-const helpers = __webpack_require__(1);
+const debug = __webpack_require__(0);
+const Timer = __webpack_require__(1);
+const helpers = __webpack_require__(2);
 
 class Scenario {
     constructor(scene) {
@@ -1041,11 +1338,13 @@ module.exports = Scenario;
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Scenario = __webpack_require__(9);
+const debug = __webpack_require__(0);
+const Scenario = __webpack_require__(11);
+const Action = __webpack_require__(8);
+const InputListener = __webpack_require__(3);
 
 class Scene {
     constructor(game) {
@@ -1053,6 +1352,8 @@ class Scene {
         this.scenario = new Scenario(this);
         this._statusNames = ["in wave", "in break"];
         this.statusIndex = 0;
+
+        this.actions = [];
     }
 
     get status() {
@@ -1075,16 +1376,18 @@ class Scene {
     }
 
     startBreak() {
-        if (this.statusIndex === 1 ) {
+        if (this.statusIndex === 1) {
             debug.warn("The game is already in break phase.");
             return;
         }
         debug.log("Break phase.");
         this.statusIndex = 1;
+
+        this.setBreakActions();
     }
 
     startNextWave() {
-        if (this.statusIndex === 0 ) {
+        if (this.statusIndex === 0) {
             debug.warn("The game is already in wave phase.");
             return;
         }
@@ -1118,18 +1421,31 @@ class Scene {
             }
         }
     }
+
+    setBreakActions() {
+        let actionTest = new Action(
+            this,
+            1,
+            'click the map',
+            "log a msg when the player click on the map",
+            function(data) {
+                debug.log("you clicked on the map");
+                debug.log(JSON.stringify(data));
+            }, ['onClickMap']);
+        this.actions = [actionTest];
+    }
 }
 
 module.exports = Scene;
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Timer = __webpack_require__(0);
-const helpers = __webpack_require__(1);
+const debug = __webpack_require__(0);
+const Timer = __webpack_require__(1);
+const helpers = __webpack_require__(2);
 
 class Tower {
     constructor(id, x, y, fireRate, damages, range) {
@@ -1164,11 +1480,11 @@ module.exports = Tower;
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const helpers = __webpack_require__(1);
+const debug = __webpack_require__(0);
+const helpers = __webpack_require__(2);
 
 class Unit {
     constructor (id, x, y, speed, hp, pathIndex) {
@@ -1240,12 +1556,12 @@ module.exports = Unit;
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(4);
-const Timer = __webpack_require__(0);
-const Map = __webpack_require__(2);
+const debug = __webpack_require__(0);
+const Timer = __webpack_require__(1);
+const Map = __webpack_require__(4);
 
 class Updater {
     constructor(game) {
@@ -1371,7 +1687,7 @@ module.exports = Updater;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 class View {

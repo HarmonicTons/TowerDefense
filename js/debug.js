@@ -12,15 +12,15 @@ module.exports = {
         return `${yea}/${mon}/${day} ${hou}:${min}:${sec}:${mil}`;
     },
 
-    log: function(msg) {
-        console.log(`%c[${this.time}] %c${msg}`, "color: #AAA", "color: #111");
+    log: function(...msgs) {
+        console.log(`%c[${this.time}] %c${msgs}`, "color: #AAA", "color: #111");
     },
 
-    warn: function(msg) {
-        console.warn(`[${this.time}] ${msg}`);
+    warn: function(...msgs) {
+        console.warn(`[${this.time}] ${msgs}`);
     },
 
-    error: function(msg) {
-        console.error(`[${this.time}] ${msg}`);
+    error: function(...msgs) {
+        console.error(`[${this.time}] ${msgs}`);
     }
 }

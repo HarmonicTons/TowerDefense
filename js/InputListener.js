@@ -16,8 +16,8 @@ class InputListener {
             }
         }
 
-        elem.onclick = () => {
-            //
+        elem.onclick = (e) => {
+            this.game.mapClick(e.layerX, e.layerY);
         }
 
         elem.onmousemove = (e) => {

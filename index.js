@@ -8,7 +8,7 @@ function main() {
 
     let canvas = document.getElementById("viewCanvas");
     let mapFile = './maps/map01.json';
-    let scenarioFile = './scenarii/scen01.json';
+    let scenarioFile = './scenarii/scen03.json';
     let unitsFile = './units/units01.json';
     let towersFile = './towers/towers01.json';
 

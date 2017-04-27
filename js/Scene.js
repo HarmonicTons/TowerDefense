@@ -1,5 +1,7 @@
 const debug = require('./debug.js');
 const Scenario = require('./Scenario.js');
+const Action = require('./Action.js');
+const InputListener = require('./InputListener.js');
 
 class Scene {
     constructor(game) {
@@ -7,6 +9,8 @@ class Scene {
         this.scenario = new Scenario(this);
         this._statusNames = ["in wave", "in break"];
         this.statusIndex = 0;
+
+        this.actions = [];
     }
 
     get status() {
@@ -29,16 +33,18 @@ class Scene {
     }
 
     startBreak() {
-        if (this.statusIndex === 1 ) {
+        if (this.statusIndex === 1) {
             debug.warn("The game is already in break phase.");
             return;
         }
         debug.log("Break phase.");
         this.statusIndex = 1;
+
+        this.setBreakActions();
     }
 
     startNextWave() {
-        if (this.statusIndex === 0 ) {
+        if (this.statusIndex === 0) {
             debug.warn("The game is already in wave phase.");
             return;
         }
@@ -71,6 +77,19 @@ class Scene {
                 this.game.end(0);
             }
         }
+    }
+
+    setBreakActions() {
+        let actionTest = new Action(
+            this,
+            1,
+            'click the map',
+            "log a msg when the player click on the map",
+            function(data) {
+                debug.log("you clicked on the map");
+                debug.log(JSON.stringify(data));
+            }, ['onClickMap']);
+        this.actions = [actionTest];
     }
 }
 

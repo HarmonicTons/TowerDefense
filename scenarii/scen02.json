@@ -1,22 +1,22 @@
 {
-    "name": "Easy Task",
-    "baseHealth": 10,
+    "name": "You gona die",
+    "baseHealth": 5,
     "waves": [
         [{
             "timestamp": 1000,
-            "id": 2
+            "id": 4
+        }, {
+            "timestamp": 1500,
+            "id": 4
         }, {
             "timestamp": 2000,
-            "id": 2
+            "id": 4
         }, {
-            "timestamp": 6000,
-            "id": 3
+            "timestamp": 2500,
+            "id": 4
         }, {
-            "timestamp": 9000,
-            "id": 3
-        }, {
-            "timestamp": 12000,
-            "id": 3
+            "timestamp": 3000,
+            "id": 4
         }],
         [{
             "timestamp": 1000,

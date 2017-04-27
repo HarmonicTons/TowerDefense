@@ -3,19 +3,7 @@
     "baseHealth": 10,
     "waves": [
         [{
-            "timestamp": 1000,
-            "id": 2
-        }, {
-            "timestamp": 2000,
-            "id": 2
-        }, {
-            "timestamp": 6000,
-            "id": 3
-        }, {
-            "timestamp": 9000,
-            "id": 3
-        }, {
-            "timestamp": 12000,
+            "timestamp": 500,
             "id": 3
         }],
         [{

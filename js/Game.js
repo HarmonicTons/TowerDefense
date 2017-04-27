@@ -1,4 +1,5 @@
 const debug = require('./debug.js');
+const PubSub = require('pubsub-js');
 const Mouse = require('./Mouse.js');
 const Renderer = require('./Renderer.js');
 const Map = require('./Map.js');
@@ -33,7 +34,7 @@ class Game {
             this.loadMap(mapFile)
         ])).then(() => {
 
-            this.addTower(2,5,5);
+            this.addTower(2, 5, 5);
 
             // start the motor
             this.renderer.render();
@@ -134,8 +135,8 @@ class Game {
         this.mouse.screenCoordinates.y = y;
     }
 
-    gridCoordinates(x,y) {
-        return this.renderer.gridCoordinates(x,y);
+    gridCoordinates(x, y) {
+        return this.renderer.gridCoordinates(x, y);
     }
 
 
@@ -153,6 +154,13 @@ class Game {
 
         //this.renderer.stop();
         this.updater.stop();
+    }
+
+    mapClick(x, y) {
+        PubSub.publish('onClickMap', {
+            x: x,
+            y: y
+        });
     }
 
 
