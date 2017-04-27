@@ -8,6 +8,11 @@ class Mouse {
         }
     }
 
+
+    /**
+     * get gridCoordinates - Grid coordinates of the mouse
+     *
+     */
     get gridCoordinates() {
         let sc = this.screenCoordinates;
         let preciseGridCoordinates = this.game.gridCoordinates(sc.x, sc.y);

@@ -1,4 +1,5 @@
 const debug = require('./debug.js');
+const PubSub = require('pubsub-js');
 
 class InputListener {
     constructor(game, elem) {
@@ -11,9 +12,7 @@ class InputListener {
                 this.game.switchMonitoring();
             }
 
-            else if (e.key === 'n') {
-                this.game.endBreak();
-            }
+            PubSub.publish('onkeypress-' + e.key);
         }
 
         elem.onclick = (e) => {

@@ -157,15 +157,8 @@ class Game {
     }
 
     mapClick(x, y) {
-        PubSub.publish('onClickMap', {
-            x: x,
-            y: y
-        });
-    }
-
-
-    endBreak() {
-        this.scene.startNextWave();
+        let gridCoordinates = this.gridCoordinates(x, y);
+        PubSub.publish('onClickMap', gridCoordinates);
     }
 
     /**

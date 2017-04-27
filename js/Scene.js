@@ -9,14 +9,20 @@ class Scene {
         this.scenario = new Scenario(this);
         this._statusNames = ["in wave", "in break"];
         this.statusIndex = 0;
-
         this.actions = [];
+
+        this.setWaveActions();
     }
 
     get status() {
         return this._statusNames[this.statusIndex];
     }
 
+
+    /**
+     * start - Start the scene with it's scenaro
+     *
+     */
     start() {
         this.scenario.startWave();
     }
@@ -32,6 +38,11 @@ class Scene {
         });
     }
 
+
+    /**
+     * startBreak - Start the break phase
+     *
+     */
     startBreak() {
         if (this.statusIndex === 1) {
             debug.warn("The game is already in break phase.");
@@ -43,6 +54,11 @@ class Scene {
         this.setBreakActions();
     }
 
+
+    /**
+     * startNextWave - Start the next wave
+     *
+     */
     startNextWave() {
         if (this.statusIndex === 0) {
             debug.warn("The game is already in wave phase.");
@@ -50,10 +66,16 @@ class Scene {
         }
         debug.log("Wave phase.");
         this.statusIndex = 0;
+        this.setWaveActions();
         this.scenario.nextWave();
         this.scenario.startWave();
     }
 
+
+    /**
+     * update - Update the scene
+     *
+     */
     update() {
         if (this.statusIndex === 0) {
             let unitsToSpawn = this.scenario.unitsToSpawn();
@@ -79,17 +101,44 @@ class Scene {
         }
     }
 
-    setBreakActions() {
-        let actionTest = new Action(
-            this,
-            1,
-            'click the map',
-            "log a msg when the player click on the map",
-            function(data) {
-                debug.log("you clicked on the map");
-                debug.log(JSON.stringify(data));
-            }, ['onClickMap']);
+
+    /**
+     * resetActions - Turn off the current set of available actions
+     *
+     */
+    resetActions() {
+        this.actions.forEach(action => {
+            action.deactivate();
+        })
+    }
+
+
+    /**
+     * setWaveActions - Define the actions available during the wave phase
+     *
+     */
+    setWaveActions() {
+        this.resetActions();
+        let actionTest = new Action(this, 1, 'click the map', function(data) {
+            debug.log(`Click x:${data.x}, y:${data.y}`);
+        }, ['onClickMap']);
         this.actions = [actionTest];
+    }
+
+
+    /**
+     * setBreakActions - Define the actions available during the break phase
+     *
+     */
+    setBreakActions() {
+        this.resetActions();
+        let actionTest = new Action(this, 1, 'click the map', function(data) {
+            debug.log(`Click x:${data.x}, y:${data.y}`);
+        }, ['onClickMap']);
+        let actionTest2 = new Action(this, 2, 'Finish break', function(data) {
+            this.startNextWave();
+        }, ['onkeypress-n', 'onkeypress-s']);
+        this.actions = [actionTest, actionTest2];
     }
 }
 
