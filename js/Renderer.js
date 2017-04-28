@@ -15,6 +15,7 @@ class Renderer {
         this.view = new View(this, canvas);
 
         this.displayMonitoring = true;
+        this.displayTowersRanges = false;
 
         this.timer = new Timer();
         this.frames = 0;
@@ -83,6 +84,23 @@ class Renderer {
         let ts = this.view.tileSize;
         this.context.fillStyle = 'rgba(0,0,255,0.1)';
         this.context.fillRect(sc2.x, sc2.y, ts, ts);
+
+        // if there is a tower to place
+        let tower = this.game.towersBook.towers.find(t => t.id === this.game.scene.towerToPlace);
+        if (tower) {
+            let image = this.towers.find(t => t.id === tower.id).image;
+            if (!image) return;
+
+            // add the tower image with transparency
+            this.context.globalAlpha = 0.5;
+            this.context.drawImage(image, sc2.x, sc2.y, ts, ts);
+            this.context.globalAlpha = 1;
+            // range display
+            this.context.beginPath();
+            this.context.arc(sc2.x + ts / 2, sc2.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+            this.context.fillStyle = 'rgba(255,0,0,0.1)';
+            this.context.fill();
+        }
     }
 
 
@@ -159,10 +177,12 @@ class Renderer {
             this.context.drawImage(image, sc.x, sc.y, ts, ts);
 
             // range display
-            this.context.beginPath();
-            this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
-            this.context.fillStyle = 'rgba(255,0,0,0.1)';
-            this.context.fill();
+            if (this.displayTowersRanges || this.game.isSelected(tower)) {
+                this.context.beginPath();
+                this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+                this.context.fillStyle = 'rgba(255,0,0,0.1)';
+                this.context.fill();
+            }
         });
     }
 
@@ -310,8 +330,8 @@ class Renderer {
         });
     }
 
-    gridCoordinates(x,y) {
-        return this.view.gridCoordinates(x,y);
+    gridCoordinates(x, y) {
+        return this.view.gridCoordinates(x, y);
     }
 }
 

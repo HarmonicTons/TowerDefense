@@ -22,6 +22,7 @@ class Game {
         this.renderer.setView(576, 384);
         this.unitsBook = {};
         this.towersBook = {};
+        this.selection = [];
 
         this.globalTimer = new Timer();
 
@@ -45,6 +46,13 @@ class Game {
         });
     }
 
+
+    /**
+     * loadScenarioFile - Load a scenario file
+     *
+     * @param  {string} scenarioFile path to json file
+     * @return {Promise}             state promise
+     */
     loadScenarioFile(scenarioFile) {
         return this.scene.loadScenario(scenarioFile)
             .then(() => this.renderer.loadScenarioUnits());
@@ -53,7 +61,7 @@ class Game {
     /**
      * loadUnitsBook - Load the units book
      *
-     * @param  {type} unitsFile path to json file
+     * @param  {string} unitsFile path to json file
      * @return {Promise} state promise, resolved when the units book is loaded
      */
     loadUnitsBook(unitsFile) {
@@ -86,18 +94,48 @@ class Game {
         this.addUnit(id, spawnPoint.x, spawnPoint.y);
     }
 
+
+    /**
+     * addUnit - Add a unit on the map
+     *
+     * @param  {number} id Id of the unit to add
+     * @param  {number} x  x coordinate
+     * @param  {number} y  y coordinate
+     * @return {Unit}      added unit
+     */
     addUnit(id, x, y) {
         let unitData = this.unitsBook.units.find(u => u.id === id);
         let unit = new Unit(id, x, y, unitData.speed, unitData.hp, 0);
         this.map.units.push(unit);
+        return unit;
     }
 
+
+    /**
+     * addTower - Add a tower on the map
+     *
+     * @param  {number} id Id of the tower to add
+     * @param  {number} x  x coordinate
+     * @param  {number} y  y coordinate
+     * @return {Tower}     added tower
+     */
     addTower(id, x, y) {
         let towerData = this.towersBook.towers.find(t => t.id === id);
+        if (!towerData) {
+            debug.error(`Couldn't find the tower of id: ${id}`);
+            return;
+        }
         let tower = new Tower(id, x, y, towerData.fireRate, towerData.damages, towerData.range);
         this.map.towers.push(tower);
+        return tower;
     }
 
+
+    /**
+     * unitsAlive - Every units alive
+     *
+     * @return {Unit[]}  array of all the units currently alive
+     */
     unitsAlive() {
         return this.map.units.filter(u => u.isAlive);
     }
@@ -135,8 +173,32 @@ class Game {
         this.mouse.screenCoordinates.y = y;
     }
 
+
+    /**
+     * gridCoordinates - Get grid coordinates from screen coordinates
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y x screen coordinate
+     * @return {object}   grid coordinates
+     */
     gridCoordinates(x, y) {
         return this.renderer.gridCoordinates(x, y);
+    }
+
+
+    /**
+     * caseCoordinates - Get case coordinates from screen coordinates
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y x screen coordinate
+     * @return {object}   case coordinates
+     */
+    caseCoordinates(x, y) {
+        let gridCoordinates = this.gridCoordinates(x, y);
+        return {
+            x: Math.floor(gridCoordinates.x),
+            y: Math.floor(gridCoordinates.y)
+        }
     }
 
 
@@ -156,16 +218,65 @@ class Game {
         this.updater.stop();
     }
 
+
+    /**
+     * mapClick - Handle a click on the map
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y y screen coordinate
+     * @fires onClickTower
+     * @fires onClickUnit
+     * @fires onClickMap
+     */
     mapClick(x, y) {
-        let gridCoordinates = this.gridCoordinates(x, y);
-        PubSub.publish('onClickMap', gridCoordinates);
+        let caseCoordinates = this.caseCoordinates(x, y);
+
+        let towerClicked = this.map.towerAt(caseCoordinates.x, caseCoordinates.y);
+        if (towerClicked) {
+            return PubSub.publish('onClickTower', towerClicked);
+        }
+
+        let unitClicked = this.map.unitAt(caseCoordinates.x, caseCoordinates.y);
+        if (unitClicked) {
+            return PubSub.publish('onClickUnit', unitClicked);
+        }
+
+        return PubSub.publish('onClickMap', caseCoordinates);
     }
 
     /**
-     * Switch wether or not the monitoring is displayed
+     * Toggle the monitoring display
      */
-    switchMonitoring() {
+    toggleMonitoring() {
         this.renderer.displayMonitoring = !this.renderer.displayMonitoring;
+    }
+
+    /**
+     * Toggle the towers' ranges display
+     */
+    toggleTowersRangeDisplay() {
+        this.renderer.displayTowersRanges = !this.renderer.displayTowersRanges;
+    }
+
+
+    /**
+     * select - Select a selection
+     *
+     * @param  {object} ...selectedObjects selection
+     */
+    select(...selectedObjects) {
+        this.selection = selectedObjects;
+    }
+
+
+    /**
+     * isSelected - Indicate if an object is selected
+     *
+     * @param  {object} obj object to check
+     * @return {boolean}    true if selected     
+     */
+    isSelected(obj) {
+        return this.selection.includes(obj);
     }
 }
 

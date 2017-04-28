@@ -222,130 +222,6 @@ module.exports = {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const debug = __webpack_require__(0);
-const PubSub = __webpack_require__(5);
-
-class InputListener {
-    constructor(game, elem) {
-        this.game = game;
-        this.elem = elem;
-
-        window.onkeypress = e => {
-            debug.log('Key pressed: ' + e.key);
-            if (e.key === 'm') {
-                this.game.switchMonitoring();
-            }
-
-            PubSub.publish('onkeypress-' + e.key);
-        }
-
-        elem.onclick = (e) => {
-            this.game.mapClick(e.layerX, e.layerY);
-        }
-
-        elem.onmousemove = (e) => {
-            this.game.setMouseCoordinates(e.layerX, e.layerY);
-        }
-    }
-}
-
-module.exports = InputListener;
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const helpers = __webpack_require__(2);
-const debug = __webpack_require__(0);
-
-class Map {
-    constructor(game, mapFile) {
-        this.game = game;
-        this.units = [];
-        this.towers = [];
-    }
-
-    /**
-     * Open a map file and set the map data
-     * @param {string} mapFile path to the file
-     * @return {Promise} state promise
-     */
-    loadMapFile(mapFile) {
-        return this.openMapFile(mapFile)
-            .catch(error => {
-                debug.error(error);
-                return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
-            })
-            .then(mapData => {
-                this.setMapData(mapData);
-            });
-    }
-
-    /**
-     * Open a map file
-     * @param {string} mapFile path to the file
-     * @return {Promise} promise of the map data
-     */
-    openMapFile(mapFile) {
-        return helpers.loadJSON(mapFile);
-    }
-
-    /**
-     * Set the map data
-     * @param {object} mapData map data
-     */
-    setMapData(mapData) {
-        this.name = mapData.name;
-        this.width = mapData.width;
-        this.height = mapData.height;
-        this.data = mapData.data;
-        this.tiles = mapData.tiles;
-        this.unitPath = mapData.unitPath;
-    }
-
-    /**
-     * Get the map index of the grid coordinates
-     * @param {number} x horizontal grid coordinate
-     * @param {number} y vertical grid coordinate
-     * @return {number} map index
-     */
-    indexAt(x, y) {
-        return x + y * this.width;
-    }
-
-    /**
-     * Get the tile id at the grid coordinates
-     * @param {number} x horizontal grid coordinate
-     * @param {number} y vertical grid coordinate
-     * @return {number} tile id
-     */
-    tileAt(x, y) {
-        if (x < 0 || y < 0 || x >= this.width || y >= this.height) return -1;
-        let index = this.indexAt(x, y);
-        return this.data[index];
-    }
-
-
-    /**
-     * @static distance - Distance between two points
-     *
-     * @param  {object} u1 point 1
-     * @param  {object} u2 point 2
-     * @return {number}    distance
-     */
-    static distance(u1, u2) {
-        return Math.sqrt((u1.x - u2.x) * (u1.x - u2.x) + (u1.y - u2.y) * (u1.y - u2.y));
-    }
-}
-
-module.exports = Map;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*
 Copyright (c) 2010,2011,2012,2013,2014 Morgan Roderick http://roderick.dk
 License: MIT - http://mrgnrdrck.mit-license.org
@@ -608,17 +484,176 @@ https://github.com/mroderick/PubSubJS
 
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const debug = __webpack_require__(0);
+const PubSub = __webpack_require__(3);
+
+class InputListener {
+    constructor(game, elem) {
+        this.game = game;
+        this.elem = elem;
+
+        window.onkeypress = e => {
+            debug.log('Key pressed: ' + e.key);
+            if (e.key === 'm') {
+                this.game.toggleMonitoring();
+            }
+            if (e.key === 'r') {
+                this.game.toggleTowersRangeDisplay();
+            }
+
+            PubSub.publish('onkeypress-' + e.key, e.key);
+        }
+
+
+        window.onkeyup = e => {
+            // escape is not detected by on onkeypress event
+            if (e.key === 'Escape') {
+                PubSub.publish('onkeypress-Escape', 'Escape');
+            }
+        }
+
+        elem.onclick = (e) => {
+            this.game.mapClick(e.layerX, e.layerY);
+        }
+
+        elem.onmousemove = (e) => {
+            this.game.setMouseCoordinates(e.layerX, e.layerY);
+        }
+
+    }
+}
+
+module.exports = InputListener;
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const helpers = __webpack_require__(2);
+const debug = __webpack_require__(0);
+
+class Map {
+    constructor(game, mapFile) {
+        this.game = game;
+        this.units = [];
+        this.towers = [];
+    }
+
+    /**
+     * Open a map file and set the map data
+     * @param {string} mapFile path to the file
+     * @return {Promise} state promise
+     */
+    loadMapFile(mapFile) {
+        return this.openMapFile(mapFile)
+            .catch(error => {
+                debug.error(error);
+                return Promise.reject(`Couldn't open the scenario file ${scenarioFile}.`);
+            })
+            .then(mapData => {
+                this.setMapData(mapData);
+            });
+    }
+
+    /**
+     * Open a map file
+     * @param {string} mapFile path to the file
+     * @return {Promise} promise of the map data
+     */
+    openMapFile(mapFile) {
+        return helpers.loadJSON(mapFile);
+    }
+
+    /**
+     * Set the map data
+     * @param {object} mapData map data
+     */
+    setMapData(mapData) {
+        this.name = mapData.name;
+        this.width = mapData.width;
+        this.height = mapData.height;
+        this.data = mapData.data;
+        this.tiles = mapData.tiles;
+        this.unitPath = mapData.unitPath;
+    }
+
+    /**
+     * Get the map index of the grid coordinates
+     * @param {number} x horizontal grid coordinate
+     * @param {number} y vertical grid coordinate
+     * @return {number} map index
+     */
+    indexAt(x, y) {
+        return x + y * this.width;
+    }
+
+    /**
+     * Get the tile id at the grid coordinates
+     * @param {number} x horizontal grid coordinate
+     * @param {number} y vertical grid coordinate
+     * @return {number} tile id
+     */
+    tileAt(x, y) {
+        if (x < 0 || y < 0 || x >= this.width || y >= this.height) return -1;
+        let index = this.indexAt(x, y);
+        return this.data[index];
+    }
+
+
+    /**
+     * @static distance - Distance between two points
+     *
+     * @param  {object} u1 point 1
+     * @param  {object} u2 point 2
+     * @return {number}    distance
+     */
+    static distance(u1, u2) {
+        return Math.sqrt((u1.x - u2.x) * (u1.x - u2.x) + (u1.y - u2.y) * (u1.y - u2.y));
+    }
+
+
+    /**
+     * towerAt - Return the tower on a case
+     *
+     * @param  {number} x x case coordinates
+     * @param  {number} y y case coordinates
+     * @return {Tower}    tower on the case if any
+     */
+    towerAt(x, y) {
+        return this.towers.find(t => t.x === x && t.y === y);
+    }
+
+    /**
+     * unitAt - Return the unit on a case
+     *
+     * @param  {number} x x case coordinates
+     * @param  {number} y y case coordinates
+     * @return {Unit}     unit on the case if any
+     */
+    unitAt(x, y) {
+        return this.units.find(u => u.x === x && u.y === y);
+    }
+}
+
+module.exports = Map;
+
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const debug = __webpack_require__(0);
-const PubSub = __webpack_require__(5);
+const PubSub = __webpack_require__(3);
 const Mouse = __webpack_require__(9);
 const Renderer = __webpack_require__(10);
-const Map = __webpack_require__(4);
+const Map = __webpack_require__(5);
 const Updater = __webpack_require__(15);
 const Scene = __webpack_require__(12);
-const InputListener = __webpack_require__(3);
+const InputListener = __webpack_require__(4);
 const Timer = __webpack_require__(1);
 const Unit = __webpack_require__(14);
 const Tower = __webpack_require__(13);
@@ -635,6 +670,7 @@ class Game {
         this.renderer.setView(576, 384);
         this.unitsBook = {};
         this.towersBook = {};
+        this.selection = [];
 
         this.globalTimer = new Timer();
 
@@ -658,6 +694,13 @@ class Game {
         });
     }
 
+
+    /**
+     * loadScenarioFile - Load a scenario file
+     *
+     * @param  {string} scenarioFile path to json file
+     * @return {Promise}             state promise
+     */
     loadScenarioFile(scenarioFile) {
         return this.scene.loadScenario(scenarioFile)
             .then(() => this.renderer.loadScenarioUnits());
@@ -666,7 +709,7 @@ class Game {
     /**
      * loadUnitsBook - Load the units book
      *
-     * @param  {type} unitsFile path to json file
+     * @param  {string} unitsFile path to json file
      * @return {Promise} state promise, resolved when the units book is loaded
      */
     loadUnitsBook(unitsFile) {
@@ -699,18 +742,48 @@ class Game {
         this.addUnit(id, spawnPoint.x, spawnPoint.y);
     }
 
+
+    /**
+     * addUnit - Add a unit on the map
+     *
+     * @param  {number} id Id of the unit to add
+     * @param  {number} x  x coordinate
+     * @param  {number} y  y coordinate
+     * @return {Unit}      added unit
+     */
     addUnit(id, x, y) {
         let unitData = this.unitsBook.units.find(u => u.id === id);
         let unit = new Unit(id, x, y, unitData.speed, unitData.hp, 0);
         this.map.units.push(unit);
+        return unit;
     }
 
+
+    /**
+     * addTower - Add a tower on the map
+     *
+     * @param  {number} id Id of the tower to add
+     * @param  {number} x  x coordinate
+     * @param  {number} y  y coordinate
+     * @return {Tower}     added tower
+     */
     addTower(id, x, y) {
         let towerData = this.towersBook.towers.find(t => t.id === id);
+        if (!towerData) {
+            debug.error(`Couldn't find the tower of id: ${id}`);
+            return;
+        }
         let tower = new Tower(id, x, y, towerData.fireRate, towerData.damages, towerData.range);
         this.map.towers.push(tower);
+        return tower;
     }
 
+
+    /**
+     * unitsAlive - Every units alive
+     *
+     * @return {Unit[]}  array of all the units currently alive
+     */
     unitsAlive() {
         return this.map.units.filter(u => u.isAlive);
     }
@@ -748,8 +821,32 @@ class Game {
         this.mouse.screenCoordinates.y = y;
     }
 
+
+    /**
+     * gridCoordinates - Get grid coordinates from screen coordinates
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y x screen coordinate
+     * @return {object}   grid coordinates
+     */
     gridCoordinates(x, y) {
         return this.renderer.gridCoordinates(x, y);
+    }
+
+
+    /**
+     * caseCoordinates - Get case coordinates from screen coordinates
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y x screen coordinate
+     * @return {object}   case coordinates
+     */
+    caseCoordinates(x, y) {
+        let gridCoordinates = this.gridCoordinates(x, y);
+        return {
+            x: Math.floor(gridCoordinates.x),
+            y: Math.floor(gridCoordinates.y)
+        }
     }
 
 
@@ -769,16 +866,65 @@ class Game {
         this.updater.stop();
     }
 
+
+    /**
+     * mapClick - Handle a click on the map
+     *
+     * @param  {number} x x screen coordinate
+     * @param  {number} y y screen coordinate
+     * @fires onClickTower
+     * @fires onClickUnit
+     * @fires onClickMap
+     */
     mapClick(x, y) {
-        let gridCoordinates = this.gridCoordinates(x, y);
-        PubSub.publish('onClickMap', gridCoordinates);
+        let caseCoordinates = this.caseCoordinates(x, y);
+
+        let towerClicked = this.map.towerAt(caseCoordinates.x, caseCoordinates.y);
+        if (towerClicked) {
+            return PubSub.publish('onClickTower', towerClicked);
+        }
+
+        let unitClicked = this.map.unitAt(caseCoordinates.x, caseCoordinates.y);
+        if (unitClicked) {
+            return PubSub.publish('onClickUnit', unitClicked);
+        }
+
+        return PubSub.publish('onClickMap', caseCoordinates);
     }
 
     /**
-     * Switch wether or not the monitoring is displayed
+     * Toggle the monitoring display
      */
-    switchMonitoring() {
+    toggleMonitoring() {
         this.renderer.displayMonitoring = !this.renderer.displayMonitoring;
+    }
+
+    /**
+     * Toggle the towers' ranges display
+     */
+    toggleTowersRangeDisplay() {
+        this.renderer.displayTowersRanges = !this.renderer.displayTowersRanges;
+    }
+
+
+    /**
+     * select - Select a selection
+     *
+     * @param  {object} ...selectedObjects selection
+     */
+    select(...selectedObjects) {
+        this.selection = selectedObjects;
+    }
+
+
+    /**
+     * isSelected - Indicate if an object is selected
+     *
+     * @param  {object} obj object to check
+     * @return {boolean}    true if selected     
+     */
+    isSelected(obj) {
+        return this.selection.includes(obj);
     }
 }
 
@@ -811,13 +957,12 @@ function main() {
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const PubSub = __webpack_require__(5);
+const PubSub = __webpack_require__(3);
 
 class Action {
-    constructor(scene, id, name, operation, triggersEvent = []) {
+    constructor(scene, name, operation, triggersEvent = []) {
         this.scene = scene;
         this.name = name;
-        this.id = id;
         this.operation = operation;
         this.triggersEvent = triggersEvent;
 
@@ -836,11 +981,11 @@ class Action {
 
     /**
      * activate - Activate the action
-     *        
+     *
      */
     activate() {
         let scene = this.scene;
-        let doOperation = (eventName, eventData) => this.operation.call(scene, eventData);
+        let doOperation = (eventName, eventData) => this.operation.call(scene, eventName, eventData);
         this.triggers = this.triggersEvent.map(triggerEvent => PubSub.subscribe(triggerEvent, doOperation));
     }
 }
@@ -903,6 +1048,7 @@ class Renderer {
         this.view = new View(this, canvas);
 
         this.displayMonitoring = true;
+        this.displayTowersRanges = false;
 
         this.timer = new Timer();
         this.frames = 0;
@@ -971,6 +1117,23 @@ class Renderer {
         let ts = this.view.tileSize;
         this.context.fillStyle = 'rgba(0,0,255,0.1)';
         this.context.fillRect(sc2.x, sc2.y, ts, ts);
+
+        // if there is a tower to place
+        let tower = this.game.towersBook.towers.find(t => t.id === this.game.scene.towerToPlace);
+        if (tower) {
+            let image = this.towers.find(t => t.id === tower.id).image;
+            if (!image) return;
+
+            // add the tower image with transparency
+            this.context.globalAlpha = 0.5;
+            this.context.drawImage(image, sc2.x, sc2.y, ts, ts);
+            this.context.globalAlpha = 1;
+            // range display
+            this.context.beginPath();
+            this.context.arc(sc2.x + ts / 2, sc2.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+            this.context.fillStyle = 'rgba(255,0,0,0.1)';
+            this.context.fill();
+        }
     }
 
 
@@ -1047,10 +1210,12 @@ class Renderer {
             this.context.drawImage(image, sc.x, sc.y, ts, ts);
 
             // range display
-            this.context.beginPath();
-            this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
-            this.context.fillStyle = 'rgba(255,0,0,0.1)';
-            this.context.fill();
+            if (this.displayTowersRanges || this.game.isSelected(tower)) {
+                this.context.beginPath();
+                this.context.arc(sc.x + ts / 2, sc.y + ts / 2, ts * tower.range, 0, 2 * Math.PI);
+                this.context.fillStyle = 'rgba(255,0,0,0.1)';
+                this.context.fill();
+            }
         });
     }
 
@@ -1198,8 +1363,8 @@ class Renderer {
         });
     }
 
-    gridCoordinates(x,y) {
-        return this.view.gridCoordinates(x,y);
+    gridCoordinates(x, y) {
+        return this.view.gridCoordinates(x, y);
     }
 }
 
@@ -1358,7 +1523,7 @@ module.exports = Scenario;
 const debug = __webpack_require__(0);
 const Scenario = __webpack_require__(11);
 const Action = __webpack_require__(8);
-const InputListener = __webpack_require__(3);
+const InputListener = __webpack_require__(4);
 
 class Scene {
     constructor(game) {
@@ -1476,10 +1641,9 @@ class Scene {
      */
     setWaveActions() {
         this.resetActions();
-        let actionTest = new Action(this, 1, 'click the map', function(data) {
+        this.addAction('click the map', function(data) {
             debug.log(`Click x:${data.x}, y:${data.y}`);
         }, ['onClickMap']);
-        this.actions = [actionTest];
     }
 
 
@@ -1489,13 +1653,75 @@ class Scene {
      */
     setBreakActions() {
         this.resetActions();
-        let actionTest = new Action(this, 1, 'click the map', function(data) {
+
+        // Click on the map
+        this.addAction('click the map', function(eventName, data) {
             debug.log(`Click x:${data.x}, y:${data.y}`);
+
+            // if there is a tower to place
+            if (this.towerToPlace) {
+                // place the tower
+                let tower = this.game.addTower(this.towerToPlace, data.x, data.y);
+                this.game.select(tower);
+                // indicate that there is no more a tower to place
+                delete this.towerToPlace;
+            }
         }, ['onClickMap']);
-        let actionTest2 = new Action(this, 2, 'Finish break', function(data) {
+
+        // Click a tower
+        this.addAction('click a tower', function(eventName, data) {
+            // if there is a tower to place
+            if (this.towerToPlace) {
+                debug.warn(`You cannot place a tower on another tower.`);
+            } else {
+                this.game.select(data);
+            }
+        }, ['onClickTower']);
+
+        // Finish the break
+        this.addAction('Finish break', function(eventName, data) {
             this.startNextWave();
         }, ['onkeypress-n', 'onkeypress-s']);
-        this.actions = [actionTest, actionTest2];
+
+        // Select a tower to place
+        this.addAction('Select tower to place', function(eventName, data) {
+            debug.log("Selected tower: " + data);
+            this.towerToPlace = +data;
+        }, ['onkeypress-1', 'onkeypress-2', 'onkeypress-3']);
+
+        // Select a tower to place
+        this.addAction('stop placing a tower to place', function(eventName, data) {
+            delete this.towerToPlace;
+        }, ['onkeypress-Escape']);
+    }
+
+
+    /**
+     * addAction - Add an action
+     *
+     * @param  {string} name        Action's name
+     * @param  {function} operation Action's operation
+     * @param  {string[]} triggers  Action's triggers
+     * @return {Action}             Action added
+     */
+    addAction(name, operation, triggers) {
+        let action = new Action(this, name, operation, triggers);
+        this.actions.push(action);
+        return action;
+    }
+
+
+    /**
+     * removeAction - Remove an action if it exists currently
+     *
+     * @param  {string} name Name of the action to remove       
+     */
+    removeAction(name) {
+        let actionsToRemove = this.actions.filter(a => a.name === name);
+        actionsToRemove.forEach(a => {
+            a.deactivate();
+            this.actions.splice(this.actions.indexOf(a));
+        });
     }
 }
 
@@ -1624,7 +1850,7 @@ module.exports = Unit;
 
 const debug = __webpack_require__(0);
 const Timer = __webpack_require__(1);
-const Map = __webpack_require__(4);
+const Map = __webpack_require__(5);
 
 class Updater {
     constructor(game) {

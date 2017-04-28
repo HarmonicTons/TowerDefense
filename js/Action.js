@@ -1,10 +1,9 @@
 const PubSub = require('pubsub-js');
 
 class Action {
-    constructor(scene, id, name, operation, triggersEvent = []) {
+    constructor(scene, name, operation, triggersEvent = []) {
         this.scene = scene;
         this.name = name;
-        this.id = id;
         this.operation = operation;
         this.triggersEvent = triggersEvent;
 
@@ -23,11 +22,11 @@ class Action {
 
     /**
      * activate - Activate the action
-     *        
+     *
      */
     activate() {
         let scene = this.scene;
-        let doOperation = (eventName, eventData) => this.operation.call(scene, eventData);
+        let doOperation = (eventName, eventData) => this.operation.call(scene, eventName, eventData);
         this.triggers = this.triggersEvent.map(triggerEvent => PubSub.subscribe(triggerEvent, doOperation));
     }
 }

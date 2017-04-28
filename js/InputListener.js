@@ -9,10 +9,21 @@ class InputListener {
         window.onkeypress = e => {
             debug.log('Key pressed: ' + e.key);
             if (e.key === 'm') {
-                this.game.switchMonitoring();
+                this.game.toggleMonitoring();
+            }
+            if (e.key === 'r') {
+                this.game.toggleTowersRangeDisplay();
             }
 
-            PubSub.publish('onkeypress-' + e.key);
+            PubSub.publish('onkeypress-' + e.key, e.key);
+        }
+
+
+        window.onkeyup = e => {
+            // escape is not detected by on onkeypress event
+            if (e.key === 'Escape') {
+                PubSub.publish('onkeypress-Escape', 'Escape');
+            }
         }
 
         elem.onclick = (e) => {
@@ -22,6 +33,7 @@ class InputListener {
         elem.onmousemove = (e) => {
             this.game.setMouseCoordinates(e.layerX, e.layerY);
         }
+
     }
 }
 

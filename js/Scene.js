@@ -119,10 +119,9 @@ class Scene {
      */
     setWaveActions() {
         this.resetActions();
-        let actionTest = new Action(this, 1, 'click the map', function(data) {
+        this.addAction('click the map', function(data) {
             debug.log(`Click x:${data.x}, y:${data.y}`);
         }, ['onClickMap']);
-        this.actions = [actionTest];
     }
 
 
@@ -132,13 +131,75 @@ class Scene {
      */
     setBreakActions() {
         this.resetActions();
-        let actionTest = new Action(this, 1, 'click the map', function(data) {
+
+        // Click on the map
+        this.addAction('click the map', function(eventName, data) {
             debug.log(`Click x:${data.x}, y:${data.y}`);
+
+            // if there is a tower to place
+            if (this.towerToPlace) {
+                // place the tower
+                let tower = this.game.addTower(this.towerToPlace, data.x, data.y);
+                this.game.select(tower);
+                // indicate that there is no more a tower to place
+                delete this.towerToPlace;
+            }
         }, ['onClickMap']);
-        let actionTest2 = new Action(this, 2, 'Finish break', function(data) {
+
+        // Click a tower
+        this.addAction('click a tower', function(eventName, data) {
+            // if there is a tower to place
+            if (this.towerToPlace) {
+                debug.warn(`You cannot place a tower on another tower.`);
+            } else {
+                this.game.select(data);
+            }
+        }, ['onClickTower']);
+
+        // Finish the break
+        this.addAction('Finish break', function(eventName, data) {
             this.startNextWave();
         }, ['onkeypress-n', 'onkeypress-s']);
-        this.actions = [actionTest, actionTest2];
+
+        // Select a tower to place
+        this.addAction('Select tower to place', function(eventName, data) {
+            debug.log("Selected tower: " + data);
+            this.towerToPlace = +data;
+        }, ['onkeypress-1', 'onkeypress-2', 'onkeypress-3']);
+
+        // Select a tower to place
+        this.addAction('stop placing a tower to place', function(eventName, data) {
+            delete this.towerToPlace;
+        }, ['onkeypress-Escape']);
+    }
+
+
+    /**
+     * addAction - Add an action
+     *
+     * @param  {string} name        Action's name
+     * @param  {function} operation Action's operation
+     * @param  {string[]} triggers  Action's triggers
+     * @return {Action}             Action added
+     */
+    addAction(name, operation, triggers) {
+        let action = new Action(this, name, operation, triggers);
+        this.actions.push(action);
+        return action;
+    }
+
+
+    /**
+     * removeAction - Remove an action if it exists currently
+     *
+     * @param  {string} name Name of the action to remove       
+     */
+    removeAction(name) {
+        let actionsToRemove = this.actions.filter(a => a.name === name);
+        actionsToRemove.forEach(a => {
+            a.deactivate();
+            this.actions.splice(this.actions.indexOf(a));
+        });
     }
 }
 

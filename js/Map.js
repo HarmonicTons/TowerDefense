@@ -79,6 +79,29 @@ class Map {
     static distance(u1, u2) {
         return Math.sqrt((u1.x - u2.x) * (u1.x - u2.x) + (u1.y - u2.y) * (u1.y - u2.y));
     }
+
+
+    /**
+     * towerAt - Return the tower on a case
+     *
+     * @param  {number} x x case coordinates
+     * @param  {number} y y case coordinates
+     * @return {Tower}    tower on the case if any
+     */
+    towerAt(x, y) {
+        return this.towers.find(t => t.x === x && t.y === y);
+    }
+
+    /**
+     * unitAt - Return the unit on a case
+     *
+     * @param  {number} x x case coordinates
+     * @param  {number} y y case coordinates
+     * @return {Unit}     unit on the case if any
+     */
+    unitAt(x, y) {
+        return this.units.find(u => u.x === x && u.y === y);
+    }
 }
 
 module.exports = Map;
