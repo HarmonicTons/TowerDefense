@@ -218,7 +218,7 @@ class Renderer {
         this.towers = [];
         let towersBook = this.game.towersBook;
         let imagesPaths = towersBook.towers.map(tower => {
-            return './images/towers/' + tower.image;
+            return '/images/towers/' + tower.image;
         });
 
         debug.log(`${imagesPaths.length} towers textures to load.`);
@@ -255,9 +255,9 @@ class Renderer {
             let unitData = unitsBook.units.find(u => u.id === id);
             if (!unitData) {
                 debug.warn(`Unknown unit: ${id}`)
-                return './images/units/default.png';
+                return '/images/units/default.png';
             }
-            return './images/units/' + unitData.image;
+            return '/images/units/' + unitData.image;
         });
 
         debug.log(`${imagesPaths.length} units textures to load.`);
@@ -281,7 +281,7 @@ class Renderer {
     loadMapTiles() {
         this.tiles = [];
         let tiles = this.game.map.tiles;
-        let imagesPaths = tiles.map(tile => './images/tiles/' + tile.fileName);
+        let imagesPaths = tiles.map(tile => '/images/tiles/' + tile.fileName);
 
         debug.log(`${imagesPaths.length} tiles textures to load.`);
         return this.loadImages(imagesPaths).then(images => {

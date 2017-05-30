@@ -273,7 +273,7 @@ class Game {
      * isSelected - Indicate if an object is selected
      *
      * @param  {object} obj object to check
-     * @return {boolean}    true if selected     
+     * @return {boolean}    true if selected
      */
     isSelected(obj) {
         return this.selection.includes(obj);
