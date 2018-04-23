@@ -119,7 +119,7 @@ class Scene {
      */
     setWaveActions() {
         this.resetActions();
-        this.addAction('click the map', function(data) {
+        this.addAction('click the map', function(eventName, data) {
             debug.log(`Click x:${data.x}, y:${data.y}`);
         }, ['onClickMap']);
     }
