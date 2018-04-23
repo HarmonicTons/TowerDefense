@@ -27,11 +27,11 @@ class InputListener {
         }
 
         elem.onclick = (e) => {
-            this.game.mapClick(e.layerX, e.layerY);
+            this.game.mapClick(e.offsetX, e.offsetY);
         }
 
         elem.onmousemove = (e) => {
-            this.game.setMouseCoordinates(e.layerX, e.layerY);
+            this.game.setMouseCoordinates(e.offsetX, e.offsetY);
         }
 
     }
